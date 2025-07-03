@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mozichem-ai"
+version = "0.1.0"
+description = "AI-powered chemistry tools and applications."
+authors = [
+    { name = "Sina Gilassi", email = "sina.gilassi@gmail.com" }
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.10.1",
+    "python-dotenv>=1.1.1",
+    "rich>=14.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/sinagilassi/mozichem-ai"
+Documentation = "https://your-docs-url"
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+"mozichem_ai" = ["config/*.yml", "data/*.csv"]
+
