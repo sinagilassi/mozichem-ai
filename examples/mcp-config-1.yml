@@ -1,0 +1,13 @@
+math:
+  transport: stdio
+  command: python
+  args: ["/path/to/math", "math.py"]
+eos-models-mcp:
+  transport: streamable_http
+  url: http://127.0.0.1:8000/eos-models-mcp/mcp/
+flash-calculations-mcp:
+  transport: streamable_http
+  url: http://127.0.0.1:8000/flash-calculations-mcp/mcp/
+thermodynamic-properties-mcp:
+  transport: streamable_http
+  url: http://127.0.0.1:8000/thermodynamic-properties-mcp/mcp/
