@@ -136,6 +136,8 @@ async def create_api(
             # SECTION: validate the agent configuration
             # NOTE: update the initial arguments
             nonlocal model_name, agent_name, agent_prompt, mcp_source, memory_mode
+
+            # update the initial arguments
             if model_name_ is not None:
                 model_name = model_name_
             if agent_name_ is not None:
@@ -149,8 +151,13 @@ async def create_api(
 
             # SECTION: llm configuration
             app.state.temperature = kwargs.get(
-                'temperature', DEFAULT_TEMPERATURE)
-            app.state.max_tokens = kwargs.get('max_tokens', DEFAULT_MAX_TOKENS)
+                'temperature',
+                DEFAULT_TEMPERATURE
+            )
+            app.state.max_tokens = kwargs.get(
+                'max_tokens',
+                DEFAULT_MAX_TOKENS
+            )
 
             # update kwargs with the new values
             kwargs['temperature'] = app.state.temperature
