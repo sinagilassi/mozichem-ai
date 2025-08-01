@@ -4,7 +4,6 @@ import asyncio
 import os
 import logging
 from mozichem_ai.memory import generate_thread
-from langchain_core.runnables import RunnableConfig
 # python dot env
 from dotenv import load_dotenv
 # local
@@ -74,7 +73,7 @@ if __name__ == "__main__":
         agent_name="MoziChemAgent",
         agent_prompt=agent_prompt,
         mcp_source=mcp_source,
-        memory_mode=False
+        memory_mode=True
     ))
     # Run the FastAPI app with Uvicorn
     uvicorn.run(

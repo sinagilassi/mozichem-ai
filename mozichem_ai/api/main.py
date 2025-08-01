@@ -3,10 +3,12 @@ import logging
 from typing import Dict, Any, Union, List
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
+from langchain_core.runnables import RunnableConfig
 # locals
 from .ai_api import MoziChemAIAPI
 from ..agents import create_agent
-from ..models import UserMessage, AgentMessage
+from ..models import ChatMessage
+from ..memory import generate_thread
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -56,39 +58,60 @@ async def create_api(
         """
         return {"message": "MoziChem AI API is running"}
 
-    @app.post("/chat", response_model=AgentMessage)
+    @app.post("/chat", response_model=ChatMessage)
     async def user_agent_chat(
-        user_message: UserMessage,
+        user_message: ChatMessage
     ):
         """
         Handle user-agent chat interaction.
 
         Parameters
         ----------
-        user_message : UserMessage
+        user_message : ChatMessage
             The message from the user to the agent.
 
         Returns
         -------
-        List[AgentMessage]
-            A list of messages from the agent in response to the user's
-            message.
+        ChatMessage
+            The response from the agent to the user.
         """
         try:
+            # NOTE: get thread id from user message
+            thread_id = user_message.thread_id
+
+            # check if thread_id is provided
+            if not thread_id:
+                # generate a new thread if not provided
+                _, thread_id = generate_thread()
+
             if MoziChemAIAPI_.agent is None:
                 logger.error("MoziChem agent is not created yet.")
                 raise HTTPException(
                     status_code=500, detail="MoziChem agent is not created yet.")
 
-            # Process the user message and get the agent's response
+            # NOTE: user message
+            user_input = user_message.content
+
+            # NOTE: Process the user message and get the agent's response
             response = await \
-                MoziChemAIAPI_.agent.ainvoke(user_message)
+                MoziChemAIAPI_.agent.ainvoke(
+                    {"messages": user_input},
+                    config=RunnableConfig(
+                        configurable={
+                            "thread_id": thread_id
+                        }
+                    )
+                )
 
             # last message is the agent's response
             if response:
-                response = response['messages'][-1]
+                response_message = response['messages'][-1]
 
-            return response
+            return ChatMessage(
+                role="assistant",
+                content=response_message.content,
+                thread_id=thread_id
+            )
         except Exception as e:
             logger.error(f"Error in user_agent_chat: {e}")
             raise HTTPException(

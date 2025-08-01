@@ -1,5 +1,5 @@
 from .mcp import stdioMCP, streamableHttpMCP, MCP
-from .chat import UserMessage, AssistantMessage, AgentMessage
+from .chat import UserMessage, AssistantMessage, ChatMessage
 
 __all__ = [
     "stdioMCP",
@@ -7,5 +7,5 @@ __all__ = [
     "MCP",
     "UserMessage",
     "AssistantMessage",
-    "AgentMessage"
+    "ChatMessage"
 ]
