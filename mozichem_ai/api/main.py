@@ -11,14 +11,17 @@ from fastapi import (
     Response
 )
 from pathlib import Path
+from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.runnables import RunnableConfig
 # locals
 from .ai_api import MoziChemAIAPI
 from ..agents import create_agent
 from ..models import (
-    UserMessage,
+    ChatMessage,
     AgentConfig,
     LlmConfig
 )
+from ..memory import generate_thread
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -239,6 +242,16 @@ async def create_api(
             The response from the agent to the user.
         """
         try:
+            # SECTION: Extract the thread_id from the user message
+            thread_id = user_message.thread_id
+            user_content = user_message.content
+
+            # NOTE: Generate a new thread if thread_id is not provided
+            if thread_id is None:
+                _, thread_id = generate_thread()
+                # Update the user message with the new thread_id
+                user_message.thread_id = thread_id
+
             # SECTION: Ensure the agent is created
             agent = getattr(app.state, "agent", None)
             if agent is None:
@@ -247,7 +260,16 @@ async def create_api(
                     status_code=500, detail="MoziChem agent is not created yet.")
 
             # NOTE: Process the user message and get the agent's response
-            response = await agent.ainvoke(user_message)
+            response = await agent.ainvoke(
+                {
+                    "messages": user_content
+                },
+                config=RunnableConfig(
+                    configurable={
+                        "thread_id": thread_id,
+                    }
+                )
+            )
 
             # last message is the agent's response
             if response:
