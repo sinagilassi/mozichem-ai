@@ -13,26 +13,17 @@ logger = logging.getLogger(__name__)
 
 class MoziChemAIAPI:
     def __init__(
-        self,
-        agent: CompiledStateGraph
+        self
     ):
         '''
         This initializes the FastAPI application and sets up the necessary middleware.
         It also prepares the MoziChem agent for handling requests.
-
-        Parameters
-        ----------
-        agent : CompiledStateGraph
-            The compiled state graph of the MoziChem agent to be used for processing requests.
         '''
         # SECTION: Initialize FastAPI app and agent
         self.app = FastAPI()
 
         # SECTION: Setup the API middleware
         self._setup_middleware()
-
-        # SECTION: Initialize the MoziChem agent
-        self.agent = agent
 
     def _setup_middleware(self):
         """Setup middleware for the FastAPI application."""

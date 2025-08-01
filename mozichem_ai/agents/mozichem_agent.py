@@ -51,7 +51,8 @@ class MoziChemAgent:
             str,
             Path
         ],
-        memory_mode: bool
+        memory_mode: bool,
+        **kwargs
     ):
         '''
         Initialize the MoziChemAgent with a model name and additional parameters.
@@ -68,6 +69,8 @@ class MoziChemAgent:
             A dictionary containing the MCP configurations.
         memory_mode : bool
             Whether to enable memory mode for the agent.
+        kwargs : dict
+            Additional keyword arguments for future extensions.
         '''
         # NOTE: set attributes
         self._model_name = model_name
@@ -75,6 +78,12 @@ class MoziChemAgent:
         self._agent_prompt = agent_prompt
         self._mcp_source = mcp_source
         self._memory_mode = memory_mode
+
+        # NOTE: kwargs
+        # temperature
+        self._temperature = kwargs.get('temperature', 0.0)
+        # max tokens
+        self._max_tokens = kwargs.get('max_tokens', 2048)
 
         # SECTION: initialize LLM
         try:
@@ -103,7 +112,12 @@ class MoziChemAgent:
         It uses the `init_chat_model` function from langchain to create the model instance.
         '''
         try:
-            self.llm = init_chat_model(self._model_name)
+            # SECTION: initialize the LLM
+            self.llm = init_chat_model(
+                self._model_name,
+                temperature=self._temperature,
+                max_tokens=self._max_tokens
+            )
         except Exception as e:
             logger.error(f"Failed to initialize LLM: {e}")
             raise RuntimeError(f"Failed to initialize LLM: {e}") from e

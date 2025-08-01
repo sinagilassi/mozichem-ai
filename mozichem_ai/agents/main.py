@@ -21,6 +21,7 @@ async def create_agent(
         Path
     ],
     memory_mode: bool = False,
+    **kwargs
 ) -> CompiledStateGraph:
     """
     Create and return a langgraph agent with the specified model name.
@@ -37,6 +38,8 @@ async def create_agent(
         A dictionary containing the MCP configurations or a path to a YAML file containing the MCP configurations.
     memory_mode : bool, optional
         Whether to enable memory mode for the agent, by default False.
+    kwargs : dict
+        Additional keyword arguments for future extensions.
 
     Returns
     -------
@@ -50,7 +53,8 @@ async def create_agent(
             agent_name,
             agent_prompt,
             mcp_source,
-            memory_mode
+            memory_mode,
+            **kwargs
         )
 
         # SECTION: initialize the agent
