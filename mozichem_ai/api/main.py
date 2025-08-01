@@ -241,23 +241,26 @@ async def create_api(
         ChatMessage
             The response from the agent to the user.
         """
+        # SECTION: Extract the thread_id from the user message
+        thread_id = user_message.thread_id
+        user_content = user_message.content
+
+        # NOTE: Generate a new thread if thread_id is not provided
+        if not thread_id:
+            _, new_thread_id = generate_thread()
+            thread_id = new_thread_id
+            user_message.thread_id = new_thread_id
+
         try:
-            # SECTION: Extract the thread_id from the user message
-            thread_id = user_message.thread_id
-            user_content = user_message.content
-
-            # NOTE: Generate a new thread if thread_id is not provided
-            if thread_id is None:
-                _, thread_id = generate_thread()
-                # Update the user message with the new thread_id
-                user_message.thread_id = thread_id
-
             # SECTION: Ensure the agent is created
             agent = getattr(app.state, "agent", None)
             if agent is None:
                 logger.error("MoziChem agent is not created yet.")
-                raise HTTPException(
-                    status_code=500, detail="MoziChem agent is not created yet.")
+                return ChatMessage(
+                    role="assistant",
+                    content="MoziChem agent is not created yet.",
+                    thread_id=thread_id
+                )
 
             # NOTE: Process the user message and get the agent's response
             response = await agent.ainvoke(
@@ -271,19 +274,40 @@ async def create_api(
                 )
             )
 
+            # SECTION: Check response and return the last message
             # last message is the agent's response
-            if response:
-                response_message = response['messages'][-1]
-
-            return ChatMessage(
-                role="assistant",
-                content=response_message.content,
-                thread_id=thread_id
-            )
+            if response and isinstance(response, dict):
+                messages = response.get("messages")
+                if messages and isinstance(messages, list):
+                    response_message = messages[-1]
+                    # NOTE: main response
+                    return ChatMessage(
+                        role="assistant",
+                        content=getattr(response_message,
+                                        "content", str(response_message)),
+                        thread_id=thread_id
+                    )
+                else:
+                    logger.error("Agent did not return any messages.")
+                    return ChatMessage(
+                        role="assistant",
+                        content="Agent did not return any messages.",
+                        thread_id=thread_id
+                    )
+            else:
+                logger.error("Agent response is not a valid dictionary.")
+                return ChatMessage(
+                    role="assistant",
+                    content="Agent response is not a valid dictionary.",
+                    thread_id=thread_id
+                )
         except Exception as e:
             logger.error(f"Error in user_agent_chat: {e}")
-            raise HTTPException(
-                status_code=500, detail=f"Failed to process user message: {e}")
+            return ChatMessage(
+                role="assistant",
+                content=f"Failed to process user message: {e}",
+                thread_id=thread_id
+            )
 
     # SECTION: Return the FastAPI application instance
     return app
