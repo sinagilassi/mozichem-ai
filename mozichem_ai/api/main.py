@@ -16,7 +16,6 @@ from .ai_api import MoziChemAIAPI
 from ..agents import create_agent
 from ..models import (
     UserMessage,
-    AgentMessage,
     AgentConfig,
     LlmConfig
 )
@@ -222,23 +221,22 @@ async def create_api(
             raise HTTPException(
                 status_code=500, detail=f"Failed to configure LLM: {e}")
 
-    @app.post("/chat", response_model=AgentMessage)
+    @app.post("/chat", response_model=ChatMessage)
     async def user_agent_chat(
-        user_message: UserMessage,
+        user_message: ChatMessage
     ):
         """
         Handle user-agent chat interaction.
 
         Parameters
         ----------
-        user_message : UserMessage
+        user_message : ChatMessage
             The message from the user to the agent.
 
         Returns
         -------
-        List[AgentMessage]
-            A list of messages from the agent in response to the user's
-            message.
+        ChatMessage
+            The response from the agent to the user.
         """
         try:
             # SECTION: Ensure the agent is created
@@ -253,9 +251,13 @@ async def create_api(
 
             # last message is the agent's response
             if response:
-                response = response['messages'][-1]
+                response_message = response['messages'][-1]
 
-            return response
+            return ChatMessage(
+                role="assistant",
+                content=response_message.content,
+                thread_id=thread_id
+            )
         except Exception as e:
             logger.error(f"Error in user_agent_chat: {e}")
             raise HTTPException(

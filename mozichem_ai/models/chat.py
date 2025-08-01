@@ -1,6 +1,5 @@
 # import libs
-from typing import Dict, List, Union, Any
-from pathlib import Path
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -20,9 +19,12 @@ class AssistantMessage(BaseModel):
     content: str = Field(..., description="Content of the assistant message")
 
 
-class AgentMessage(BaseModel):
+class ChatMessage(BaseModel):
     """
-    Model for agent messages in the chat.
+    Model for chat messages, which can be either user or assistant messages.
     """
-    role: str = Field("agent", description="Role of the message sender")
-    content: str = Field(..., description="Content of the agent message")
+    role: str = Field(..., description="Role of the message sender")
+    content: str = Field(..., description="Content of the chat message")
+    thread_id: Optional[str] = Field(
+        None, description="Identifier for the chat thread"
+    )
