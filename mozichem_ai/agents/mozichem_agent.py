@@ -1,14 +1,19 @@
 # import libs
 import logging
-from typing import Dict, Optional, Union, List, Any
+from typing import (
+    Dict,
+    Union,
+    List,
+    Any,
+    Optional
+)
 from pathlib import Path
 from langchain.chat_models import init_chat_model
 from langgraph.prebuilt import create_react_agent
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.checkpoint.memory import MemorySaver
-from langchain_core.runnables import RunnableConfig
 # local
-from mozichem_ai.models import stdioMCP, streamableHttpMCP, MCP
+from mozichem_ai.models import stdioMCP, streamableHttpMCP
 from mozichem_ai.agents.mcp_manager import MCPManager
 
 # NOTE: logger
@@ -28,6 +33,12 @@ class MoziChemAgent:
     _memory_mode = False
     # agent name
     _agent_name = None
+    # mcp stdio dict
+    mcp_stdio_dict: Dict[str, Any] = {}
+    # mcp streamable http dict
+    mcp_streamable_http_dict: Dict[str, Any] = {}
+    # client
+    client: Optional[MultiServerMCPClient] = None
 
     def __init__(
         self,
@@ -62,17 +73,29 @@ class MoziChemAgent:
         self._model_name = model_name
         self._agent_name = agent_name
         self._agent_prompt = agent_prompt
-        self.mcp_source = mcp_source
+        self._mcp_source = mcp_source
         self._memory_mode = memory_mode
 
         # SECTION: initialize LLM
-        self.init_llm()
+        try:
+            self.init_llm()
+        except Exception as e:
+            logger.error(f"Failed to initialize LLM: {e}")
+            raise RuntimeError(f"Failed to initialize LLM: {e}") from e
 
         # SECTION: adapt MCP
-        self.adapt_mcp()
+        try:
+            self.adapt_mcp()
+        except Exception as e:
+            logger.error(f"Failed to adapt MCP: {e}")
+            raise RuntimeError(f"Failed to adapt MCP: {e}") from e
 
         # SECTION: create client
-        self.create_client()
+        try:
+            self.create_client()
+        except Exception as e:
+            logger.error(f"Failed to create MCP client: {e}")
+            raise RuntimeError(f"Failed to create MCP client: {e}") from e
 
     def init_llm(self):
         '''
@@ -91,7 +114,7 @@ class MoziChemAgent:
         '''
         try:
             # NOTE: init MCPManager
-            MCPManager_ = MCPManager(self.mcp_source)
+            MCPManager_ = MCPManager(self._mcp_source)
 
             # NOTE: mcp config
             mcp_ = MCPManager_.config_mcp()
@@ -100,16 +123,22 @@ class MoziChemAgent:
             if isinstance(mcp_, dict):
                 # stdio mcp dict
                 self.mcp_stdio_dict = {
-                    name: stdioMCP(**config).model_dump()
+                    name: config.model_dump()
                     for name, config in mcp_.items()
-                    if isinstance(config, dict) and config.get('transport') == 'stdio'
+                    if (
+                        isinstance(config, stdioMCP) and
+                        config.transport == 'stdio'
+                    )
                 }
 
                 # streamable http mcp dict
                 self.mcp_streamable_http_dict = {
-                    name: streamableHttpMCP(**config).model_dump()
+                    name: config.model_dump()
                     for name, config in mcp_.items()
-                    if isinstance(config, dict) and config.get('transport') == 'streamable_http'
+                    if (
+                        isinstance(config, streamableHttpMCP) and
+                        config.transport == 'streamable_http'
+                    )
                 }
         except Exception as e:
             logger.error(f"Failed to adapt MCP: {e}")
@@ -120,7 +149,10 @@ class MoziChemAgent:
         Create and return a MultiServerMCPClient instance with the MCP configurations.
         '''
         try:
-            # section: mcp feed
+            a = self.mcp_stdio_dict
+            b = self.mcp_streamable_http_dict
+
+            # SECTION: mcp feed
             mcp_feed: Dict[str, Any] = {
                 **self.mcp_stdio_dict,
                 **self.mcp_streamable_http_dict
@@ -139,10 +171,15 @@ class MoziChemAgent:
         build and return a langgraph agent using the initialized LLM and MCP client.
         '''
         try:
-            # SECTION: client and tools
-            client = self.client
-            # get tools
-            tools = await client.get_tools()
+            # SECTION: client tools retrieval
+            # check
+            if self.client:
+                # get tools
+                tools = await self.client.get_tools()
+            else:
+                logger.warning(
+                    "MCP client is not initialized. No tools will be available.")
+                tools = []
 
             # SECTION: memory saver
             if self._memory_mode:

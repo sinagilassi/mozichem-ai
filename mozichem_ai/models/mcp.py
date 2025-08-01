@@ -7,7 +7,6 @@ class stdioMCP(BaseModel):
     """
     Model for standard input/output MCP configuration.
     """
-    name: str = Field(..., description="Name of the MCP")
     transport: str = Field("stdio", description="Transport method for the MCP")
     command: Optional[str] = Field(None, description="Command to run the MCP")
     args: List[str] = Field(
@@ -20,7 +19,6 @@ class streamableHttpMCP(BaseModel):
     """
     Model for streamable HTTP MCP configuration.
     """
-    name: str = Field(..., description="Name of the MCP")
     transport: str = Field(
         "streamable_http",
         description="Transport method for the MCP"

@@ -27,7 +27,10 @@ class MCPManager:
         # NOTE: set attributes
         self.mcp = mcp
 
-    def _load_mcp_from_yaml(self, mcp_source: Union[str, Path]) -> Dict[str, Any]:
+    def _load_mcp_from_yaml(
+        self,
+        mcp_source: Union[str, Path]
+    ) -> Dict[str, Any]:
         """
         Load MCP configurations from a YAML file.
 
