@@ -1,6 +1,11 @@
 # import libs
 import logging
-from typing import Dict, List, Union
+from typing import (
+    Dict,
+    List,
+    Union,
+    Optional
+)
 from pathlib import Path
 from langgraph.graph.state import CompiledStateGraph
 # local
@@ -14,12 +19,14 @@ async def create_agent(
     model_name: str,
     agent_name: str,
     agent_prompt: str,
-    mcp_source: Union[
+    mcp_source: Optional[
+        Union[
         Dict[str, Dict[str, str]],
         Dict[str, Dict[str, str | List[str]]],
         str,
         Path
-    ],
+        ]
+    ] = None,
     memory_mode: bool = False,
     **kwargs
 ) -> CompiledStateGraph:

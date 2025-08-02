@@ -1,6 +1,6 @@
 # import libs
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Union
+from typing import List, Optional, Dict
 
 
 class stdioMCP(BaseModel):

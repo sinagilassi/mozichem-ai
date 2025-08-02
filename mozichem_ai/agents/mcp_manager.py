@@ -1,6 +1,10 @@
 # import libs
 import logging
-from typing import Dict, List, Union, Any
+from typing import (
+    Dict,
+    Union,
+    Any
+)
 from pathlib import Path
 # local
 from ..models import stdioMCP, streamableHttpMCP
@@ -52,7 +56,9 @@ class MCPManager:
             raise RuntimeError(
                 f"Failed to load MCP configurations: {e}") from e
 
-    def config_mcp(self) -> Dict[str, Union[stdioMCP, streamableHttpMCP]]:
+    def config_mcp(
+        self
+    ) -> Dict[str, Union[stdioMCP, streamableHttpMCP]]:
         '''
         Configure and return the MCP configurations.
 

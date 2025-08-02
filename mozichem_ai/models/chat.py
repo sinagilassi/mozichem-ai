@@ -28,3 +28,6 @@ class ChatMessage(BaseModel):
     thread_id: Optional[str] = Field(
         None, description="Identifier for the chat thread"
     )
+    response_time: Optional[float] = Field(
+        None, description="Time taken (in seconds) for the agent to respond"
+    )

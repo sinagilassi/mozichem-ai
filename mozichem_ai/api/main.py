@@ -1,9 +1,11 @@
 # import libs
 import logging
+import time
 from typing import (
     Dict,
     Union,
-    List
+    List,
+    Optional
 )
 from fastapi import (
     FastAPI,
@@ -11,7 +13,6 @@ from fastapi import (
     Response
 )
 from pathlib import Path
-from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.runnables import RunnableConfig
 # locals
 from .ai_api import MoziChemAIAPI
@@ -19,7 +20,12 @@ from ..agents import create_agent
 from ..models import (
     ChatMessage,
     AgentConfig,
-    LlmConfig
+    LlmConfig,
+    ApiConfigSummary,
+    OverallSettings,
+    AppInfo,
+    AgentDetails,
+    LlmDetails
 )
 from ..memory import generate_thread
 
@@ -36,12 +42,14 @@ async def create_api(
     model_name: str,
     agent_name: str,
     agent_prompt: str,
-    mcp_source: Union[
+    mcp_source: Optional[
+        Union[
         Dict[str, Dict[str, str]],
         Dict[str, Dict[str, str | List[str]]],
         str,
         Path
-    ],
+        ]
+    ] = None,
     memory_mode: bool = False,
     **kwargs
 ) -> FastAPI:
@@ -56,23 +64,43 @@ async def create_api(
         The name of the agent.
     agent_prompt : str
         The prompt to be used for the agent.
-    mcp_source : Dict[str, Dict[str, str]] | Dict[str, Dict[str, str | List[str]]], | str | Path
+    mcp_source : Dict[str, Dict[str, str]] | Dict[str, Dict[str, str | List[str]]], | str | Path, optional
         A dictionary containing the MCP configurations or a path to a YAML file containing the MCP configurations.
     memory_mode : bool, optional
         Whether to enable memory mode for the agent, by default False.
     kwargs : dict
         Additional keyword arguments for future extensions.
+        - temperature: float, optional
+            The temperature for the LLM, by default 0.0.
+        - max_tokens: int, optional
+            The maximum number of tokens for the LLM, by default 2048.
+        - cors_origins: List[str], optional
+            A list of allowed CORS origins. If None, defaults to allowing all origins.
+        - name: str, optional
+            The name of the API, by default "MoziChem AI API".
+        - version: str, optional
+            The version of the API, by default "No version set".
+        - description: str, optional
+            A description of the API, by default "No description set".
 
     Returns
     -------
     FastAPI
         The FastAPI application instance.
     """
-    # SECTION: create agent
-    # Use app.state for shared agent instance
+    # NOTE: inputs
+    cors_origins = kwargs.get('cors_origins', None)
+    name = kwargs.get('name', None)
+    version = kwargs.get('version', None)
+    description = kwargs.get('description', None)
 
     # SECTION: Initialize the MoziChem AI API
-    MoziChemAIAPI_ = MoziChemAIAPI()
+    MoziChemAIAPI_ = MoziChemAIAPI(
+        cors_origins=cors_origins,
+        name=name,
+        version=version,
+        description=description
+    )
 
     # NOTE: create fastapi app instance
     app = MoziChemAIAPI_.app
@@ -109,7 +137,11 @@ async def create_api(
         """
         Root endpoint to check if the API is running.
         """
-        return Response(content='{"message": "MoziChem AI API is running"}', media_type="application/json", status_code=200)
+        return Response(
+            content='{"message": "MoziChem AI API is running"}',
+            media_type="application/json",
+            status_code=200
+        )
 
     @app.get("/agent-initialization")
     async def initialize_agent():
@@ -266,10 +298,14 @@ async def create_api(
                 return ChatMessage(
                     role="assistant",
                     content="MoziChem agent is not created yet.",
-                    thread_id=thread_id
+                    thread_id=thread_id,
+                    response_time=None
                 )
 
-            # NOTE: Process the user message and get the agent's response
+            # NOTE: Measure computation time
+            start_time = time.time()
+
+            # NOTE: Invoke the agent with the user message
             response = await agent.ainvoke(
                 {
                     "messages": user_content
@@ -280,6 +316,10 @@ async def create_api(
                     }
                 )
             )
+
+            # NOTE: Measure end time and calculate response time
+            end_time = time.time()
+            response_time = end_time - start_time
 
             # SECTION: Check response and return the last message
             # last message is the agent's response
@@ -292,29 +332,91 @@ async def create_api(
                         role="assistant",
                         content=getattr(response_message,
                                         "content", str(response_message)),
-                        thread_id=thread_id
+                        thread_id=thread_id,
+                        response_time=response_time
                     )
                 else:
                     logger.error("Agent did not return any messages.")
                     return ChatMessage(
                         role="assistant",
                         content="Agent did not return any messages.",
-                        thread_id=thread_id
+                        thread_id=thread_id,
+                        response_time=response_time
                     )
             else:
                 logger.error("Agent response is not a valid dictionary.")
                 return ChatMessage(
                     role="assistant",
                     content="Agent response is not a valid dictionary.",
-                    thread_id=thread_id
+                    thread_id=thread_id,
+                    response_time=response_time
                 )
         except Exception as e:
             logger.error(f"Error in user_agent_chat: {e}")
             return ChatMessage(
                 role="assistant",
                 content=f"Failed to process user message: {e}",
-                thread_id=thread_id
+                thread_id=thread_id,
+                response_time=None
             )
 
     # SECTION: Return the FastAPI application instance
+    @app.get("/app-info", response_model=ApiConfigSummary)
+    async def get_app_info():
+        """
+        Return app info, agent details, llm details, and overall settings as an ApiConfigSummary model.
+        """
+        try:
+            # NOTE: Get the agent details
+            agent_obj = getattr(app.state, "agent", None)
+
+            # NOTE: app info
+            app_info = AppInfo(
+                name=MoziChemAIAPI_.name,
+                version=MoziChemAIAPI_.version,
+                description=MoziChemAIAPI_.description,
+            )
+
+            # NOTE: Agent details
+            agent_details = AgentDetails(
+                exists=agent_obj is not None,
+                model_name=model_name,
+                agent_name=agent_name,
+                agent_prompt=agent_prompt,
+                mcp_source=mcp_source,
+                memory_mode=memory_mode
+            )
+
+            # NOTE: LLM details
+            llm_details = LlmDetails(
+                temperature=getattr(
+                    app.state,
+                    "temperature",
+                    DEFAULT_TEMPERATURE
+                ),
+                max_tokens=getattr(
+                    app.state,
+                    "max_tokens",
+                    DEFAULT_MAX_TOKENS
+                )
+            )
+
+            # NOTE: Overall settings
+            overall_settings = OverallSettings(
+                cors_origins=MoziChemAIAPI_.cors_origins
+            )
+
+            # SECTION: Return the ApiConfigSummary model
+            return ApiConfigSummary(
+                app=app_info,
+                agent=agent_details,
+                llm=llm_details,
+                settings=overall_settings
+            )
+        except Exception as e:
+            logger.error(f"Error in get_app_info: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to retrieve app info: {e}"
+            )
     return app

@@ -45,13 +45,15 @@ class MoziChemAgent:
         model_name: str,
         agent_name: str,
         agent_prompt: str,
-        mcp_source: Union[
+        mcp_source: Optional[
+            Union[
             Dict[str, Dict[str, str]],
             Dict[str, Dict[str, str | List[str]]],
             str,
             Path
-        ],
-        memory_mode: bool,
+            ]
+        ] = None,
+        memory_mode: bool = False,
         **kwargs
     ):
         '''
@@ -65,9 +67,9 @@ class MoziChemAgent:
             The name of the agent.
         agent_prompt : str
             The prompt to be used for the agent.
-        mcp_source : Dict[str, Dict[str, str]] | Dict[str, Dict[str, str | List[str]]]
-            A dictionary containing the MCP configurations.
-        memory_mode : bool
+        mcp_source : Dict[str, Dict[str, str]] | Dict[str, Dict[str, str | List[str]]], str, Path, optional
+            A dictionary containing the MCP configurations or a path to a YAML file containing the MCP configurations.
+        memory_mode : bool, optional
             Whether to enable memory mode for the agent.
         kwargs : dict
             Additional keyword arguments for future extensions.
@@ -127,33 +129,35 @@ class MoziChemAgent:
         This method adapts the MCP configurations based on the provided mcp_source.
         '''
         try:
-            # NOTE: init MCPManager
-            MCPManager_ = MCPManager(self._mcp_source)
+            # SECTION: mcp setup
+            if self._mcp_source:
+                # NOTE: init MCPManager
+                MCPManager_ = MCPManager(self._mcp_source)
 
-            # NOTE: mcp config
-            mcp_ = MCPManager_.config_mcp()
+                # NOTE: mcp config
+                mcp_ = MCPManager_.config_mcp()
 
-            # SECTION: convert to MCP dict for MultiServerMCPClient
-            if isinstance(mcp_, dict):
-                # stdio mcp dict
-                self.mcp_stdio_dict = {
-                    name: config.model_dump()
-                    for name, config in mcp_.items()
-                    if (
-                        isinstance(config, stdioMCP) and
-                        config.transport == 'stdio'
-                    )
-                }
+                # NOTE: convert to MCP dict for MultiServerMCPClient
+                if isinstance(mcp_, dict):
+                    # stdio mcp dict
+                    self.mcp_stdio_dict = {
+                        name: config.model_dump()
+                        for name, config in mcp_.items()
+                        if (
+                            isinstance(config, stdioMCP) and
+                            config.transport == 'stdio'
+                        )
+                    }
 
-                # streamable http mcp dict
-                self.mcp_streamable_http_dict = {
-                    name: config.model_dump()
-                    for name, config in mcp_.items()
-                    if (
-                        isinstance(config, streamableHttpMCP) and
-                        config.transport == 'streamable_http'
-                    )
-                }
+                    # streamable http mcp dict
+                    self.mcp_streamable_http_dict = {
+                        name: config.model_dump()
+                        for name, config in mcp_.items()
+                        if (
+                            isinstance(config, streamableHttpMCP) and
+                            config.transport == 'streamable_http'
+                        )
+                    }
         except Exception as e:
             logger.error(f"Failed to adapt MCP: {e}")
             raise RuntimeError(f"Failed to adapt MCP: {e}") from e
@@ -163,19 +167,26 @@ class MoziChemAgent:
         Create and return a MultiServerMCPClient instance with the MCP configurations.
         '''
         try:
-            a = self.mcp_stdio_dict
-            b = self.mcp_streamable_http_dict
-
             # SECTION: mcp feed
-            mcp_feed: Dict[str, Any] = {
-                **self.mcp_stdio_dict,
-                **self.mcp_streamable_http_dict
-            }
+            # check if mcp_stdio_dict and mcp_streamable_http_dict are empty
+            if (
+                not self.mcp_stdio_dict and
+                not self.mcp_streamable_http_dict
+            ):
+                # combine stdio and streamable http mcp dicts
+                mcp_feed: Dict[str, Any] = {
+                    **self.mcp_stdio_dict,
+                    **self.mcp_streamable_http_dict
+                }
 
-            # SECTION: create MCP client
-            self.client = MultiServerMCPClient(
-                mcp_feed
-            )
+                # SECTION: create MCP client
+                self.client = MultiServerMCPClient(
+                    mcp_feed
+                )
+            else:
+                logger.warning(
+                    "No valid MCP configurations found. Client will not be created.")
+                self.client = None
         except Exception as e:
             logger.error(f"Failed to create MCP client: {e}")
             raise RuntimeError(f"Failed to create MCP client: {e}") from e

@@ -1,6 +1,13 @@
 from .mcp import stdioMCP, streamableHttpMCP, MCP
 from .chat import UserMessage, AssistantMessage, ChatMessage
 from .llm import AgentConfig, LlmConfig
+from .api import (
+    AppInfo,
+    AgentDetails,
+    LlmDetails,
+    OverallSettings,
+    ApiConfigSummary
+)
 
 __all__ = [
     "stdioMCP",
@@ -10,5 +17,10 @@ __all__ = [
     "AssistantMessage",
     "ChatMessage",
     "AgentConfig",
-    "LlmConfig"
+    "LlmConfig",
+    "AppInfo",
+    "AgentDetails",
+    "LlmDetails",
+    "OverallSettings",
+    "ApiConfigSummary"
 ]
