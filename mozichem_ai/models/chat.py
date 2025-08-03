@@ -25,6 +25,9 @@ class ChatMessage(BaseModel):
     """
     role: str = Field(..., description="Role of the message sender")
     content: str = Field(..., description="Content of the chat message")
+    messages: Optional[list] = Field(
+        default_factory=list, description="Additional content for the message"
+    )
     thread_id: Optional[str] = Field(
         None, description="Identifier for the chat thread"
     )
