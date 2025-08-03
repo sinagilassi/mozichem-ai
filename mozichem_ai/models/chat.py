@@ -1,5 +1,6 @@
 # import libs
 from typing import Optional
+import time
 from pydantic import BaseModel, Field
 
 
@@ -33,4 +34,8 @@ class ChatMessage(BaseModel):
     )
     response_time: Optional[float] = Field(
         None, description="Time taken (in seconds) for the agent to respond"
+    )
+    timestamp: float = Field(
+        default_factory=time.time,
+        description="Timestamp when the message was created"
     )
