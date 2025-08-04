@@ -280,6 +280,8 @@ async def create_api(
         ChatMessage
             The response from the agent to the user.
         """
+        # NOTE: log
+        logger.info(f"Received user message: {user_message}")
         # SECTION: Extract the thread_id from the user message
         thread_id = user_message.thread_id
         user_content = user_message.content
