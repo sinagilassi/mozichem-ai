@@ -1,5 +1,6 @@
 # import libs
 import logging
+import os
 import uvicorn
 import asyncio
 from typing import (
@@ -9,6 +10,10 @@ from typing import (
     Optional
 )
 from pathlib import Path
+import mimetypes
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+import webbrowser
 # local
 from .api import create_api
 
@@ -76,7 +81,7 @@ def mozichem_chat(
     """
     try:
         # SECTION: Create the FastAPI application instance
-        app_instance = asyncio.run(create_api(
+        app_instance: FastAPI = asyncio.run(create_api(
             model_name=model_name,
             agent_name=agent_name,
             agent_prompt=agent_prompt,
@@ -90,7 +95,38 @@ def mozichem_chat(
         logger.info(
             f"FastAPI application created successfully with model: {model_name}, agent: {agent_name}")
 
-        # SECTION: Run the FastAPI application
+        # SECTION: Set up MIME types for static files
+        mimetypes.add_type("text/css", ".css")
+        mimetypes.add_type("application/javascript", ".js")
+        mimetypes.add_type("image/svg+xml", ".svg")
+        mimetypes.add_type("image/png", ".png")
+        mimetypes.add_type("image/jpeg", ".jpg")
+        mimetypes.add_type("image/gif", ".gif")
+        mimetypes.add_type("application/json", ".json")
+        mimetypes.add_type("font/woff", ".woff")
+        mimetypes.add_type("font/woff2", ".woff2")
+        mimetypes.add_type("application/font-ttf", ".ttf")
+        mimetypes.add_type("application/vnd.ms-fontobject", ".eot")
+
+        # SECTION: Mount Angular static files
+        # path to the Angular dist directory
+        angular_dist_path = os.path.join(
+            os.path.dirname(__file__),
+            'ui',
+            'browser'
+        )
+
+        # mount static files
+        app_instance.mount(
+            "/",
+            StaticFiles(directory=angular_dist_path, html=True),
+            name="static"
+        )
+
+        # SECTION: frontend and backend settings
+        # NOTE: Open web UI for MoziChem Chat
+        webbrowser.open(f"http://{host}:{port}")
+        # NOTE: Run the FastAPI application
         uvicorn.run(
             app_instance,
             host=host,
