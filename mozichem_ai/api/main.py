@@ -146,7 +146,7 @@ async def create_api(
                 detail=f"Failed to initialize agent: {e}"
             )
 
-    @app.get("/")
+    @app.get("/mozichem-ai")
     async def root():
         """
         Root endpoint to check if the API is running.
