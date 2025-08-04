@@ -105,6 +105,20 @@ async def create_api(
     # NOTE: create fastapi app instance
     app = MoziChemAIAPI_.app
 
+    # NOTE: agent initialization if app.state.agent does not exist
+    if not hasattr(app.state, "agent"):
+        app.state.agent = await create_agent(
+            model_name=model_name,
+            agent_name=agent_name,
+            agent_prompt=agent_prompt,
+            mcp_source=mcp_source,
+            memory_mode=memory_mode,
+            **kwargs
+        )
+        # log
+        logger.info(
+            f"MoziChem agent created successfully with model: {model_name}, agent: {agent_name}")
+
     # SECTION: Register the API routes
 
     async def agent_initialization():
