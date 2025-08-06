@@ -10,10 +10,13 @@ from typing import (
 from fastapi import (
     FastAPI,
     HTTPException,
-    Response
+    Response,
+    WebSocket
 )
 from pathlib import Path
+# langchain
 from langchain_core.runnables import RunnableConfig
+from langchain_core.messages import ToolMessage, AIMessage, HumanMessage, SystemMessage
 # locals
 from .ai_api import MoziChemAIAPI
 from ..agents import create_agent
@@ -25,9 +28,11 @@ from ..models import (
     OverallSettings,
     AppInfo,
     AgentDetails,
-    LlmDetails
+    LlmDetails,
+    AgentMessage
 )
 from ..memory import generate_thread
+from ..utils import agent_message_analyzer
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -118,6 +123,39 @@ async def create_api(
         # log
         logger.info(
             f"MoziChem agent created successfully with model: {model_name}, agent: {agent_name}")
+
+    # SECTION: websockets configurations
+    # set client
+    websocket_clients = set()
+
+    @app.websocket("/ws")
+    async def websocket_endpoint(websocket: WebSocket):
+        await websocket.accept()
+        websocket_clients.add(websocket)
+        try:
+            while True:
+                await websocket.receive_text()  # Ignore incoming messages
+        except Exception:
+            pass
+        finally:
+            websocket_clients.remove(websocket)
+
+    async def broadcast_log(log: str):
+        for ws in list(websocket_clients):
+            try:
+                # not empty log
+                if log and len(log.strip()) > 0:
+                    # send log to websocket
+                    await ws.send_text(log)
+            except Exception:
+                websocket_clients.remove(ws)
+
+    async def broadcast_agent_log(log: AgentMessage):
+        for ws in list(websocket_clients):
+            try:
+                await ws.send_text(log)
+            except Exception:
+                websocket_clients.remove(ws)
 
     # SECTION: Register the API routes
 
@@ -383,6 +421,136 @@ async def create_api(
                 )
         except Exception as e:
             logger.error(f"Error in user_agent_chat: {e}")
+            return ChatMessage(
+                role="assistant",
+                content=f"Failed to process user message: {e}",
+                thread_id=thread_id,
+                response_time=None,
+                timestamp=timestamp,
+                messages=[]
+            )
+
+    @app.post("/chat-stream", response_model=ChatMessage)
+    async def user_agent_chat_stream(
+        user_message: ChatMessage
+    ):
+        """
+        Handle user-agent chat interaction.
+
+        Parameters
+        ----------
+        user_message : ChatMessage
+            The message from the user to the agent.
+
+        Returns
+        -------
+        ChatMessage
+            The response from the agent to the user.
+        """
+        # NOTE: log
+        logger.info(f"Received user message: {user_message}")
+        # SECTION: Extract the thread_id from the user message
+        thread_id = user_message.thread_id
+        user_content = user_message.content
+        # timestamp
+        timestamp = user_message.timestamp
+
+        # NOTE: Generate a new thread if thread_id is not provided
+        if not thread_id:
+            _, new_thread_id = generate_thread()
+            thread_id = new_thread_id
+            user_message.thread_id = new_thread_id
+
+        # timestamp
+        if not timestamp:
+            timestamp = time.time()
+            user_message.timestamp = timestamp
+
+        try:
+            # SECTION: Ensure the agent is created
+            agent = getattr(app.state, "agent", None)
+            if agent is None:
+                logger.error("MoziChem agent is not created yet.")
+                return ChatMessage(
+                    role="assistant",
+                    content="MoziChem agent is not created yet.",
+                    thread_id=thread_id,
+                    response_time=None,
+                    timestamp=timestamp
+                )
+
+            # NOTE: Measure computation time
+            start_time = time.time()
+
+            # SECTION: Invoke the agent with the user message
+            async for chunk in agent.astream(
+                {"messages": [
+                    HumanMessage(content=user_content),
+                ]},
+                config=RunnableConfig(
+                    configurable={
+                        "thread_id": thread_id
+                    }
+                ),
+                stream_mode="updates"
+            ):
+                # NOTE: Process each chunk
+                if not isinstance(chunk, dict):
+                    logger.error(f"Received non-dictionary chunk: {chunk}")
+                    return ChatMessage(
+                        role="assistant",
+                        content="Agent response is not a valid dictionary.",
+                        thread_id=thread_id,
+                        response_time=None,
+                        timestamp=timestamp,
+                        messages=[]
+                    )
+
+                # NOTE: iterate through the messages in the chunk
+                for value in chunk.values():
+                    # get the messages
+                    messages = value['messages']
+
+                    # iterate through messages
+                    for message in messages:
+                        # agent message analyzer
+                        agent_message = agent_message_analyzer(message)
+
+                        # broadcast the log to all websocket clients
+                        await broadcast_agent_log(agent_message)
+
+            # NOTE: Measure end time and calculate response time
+            end_time = time.time()
+            response_time = end_time - start_time
+
+            # SECTION: Check response and return the last message
+            # last message is the agent's response
+            if messages and isinstance(messages, list):
+
+                response_message = messages[-1]
+                # NOTE: main response
+                return ChatMessage(
+                    role="assistant",
+                    content=getattr(response_message,
+                                    "content", str(response_message)),
+                    thread_id=thread_id,
+                    response_time=response_time,
+                    timestamp=timestamp,
+                    messages=messages
+                )
+            else:
+                # NOTE: no messages returned
+                logger.error("Agent response is not a list of messages.")
+                return ChatMessage(
+                    role="assistant",
+                    content="Agent response is not a list of messages.",
+                    thread_id=thread_id,
+                    response_time=response_time,
+                    timestamp=timestamp,
+                    messages=[]
+                )
+        except Exception as e:
+            logger.error(f"Error in user_agent_chat_stream: {e}")
             return ChatMessage(
                 role="assistant",
                 content=f"Failed to process user message: {e}",

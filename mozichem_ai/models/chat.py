@@ -1,5 +1,10 @@
 # import libs
-from typing import Optional
+from typing import (
+    Optional,
+    List,
+    Literal,
+    Dict
+)
 import time
 from pydantic import BaseModel, Field
 
@@ -38,4 +43,26 @@ class ChatMessage(BaseModel):
     timestamp: float = Field(
         default_factory=time.time,
         description="Timestamp when the message was created"
+    )
+
+
+class AgentMessage(BaseModel):
+    """
+    Model for agent messages in the chat.
+    """
+    type: Literal["user", "ai", "system", "tool", "unknown"] = Field(
+        ...,
+        description="Type of the message, either 'user', 'assistant', 'system', or 'tool'"
+    )
+    content: str | List[str | Dict] = Field(
+        ...,  description="messages in the chat thread"
+    )
+    name: Optional[str] = Field(
+        None, description="Name of the tool or agent"
+    )
+    tool_call_id: Optional[str] = Field(
+        None, description="Identifier for the tool call"
+    )
+    tool_calls: Optional[list] = Field(
+        default_factory=list, description="List of tool calls associated with the message"
     )

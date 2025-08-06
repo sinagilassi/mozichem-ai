@@ -1014,6 +1014,7 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
     { name = "rich" },
+    { name = "websockets" },
 ]
 
 [package.metadata]
@@ -1029,6 +1030,7 @@ requires-dist = [
     { name = "pydantic-settings", specifier = ">=2.10.1" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "rich", specifier = ">=14.0.0" },
+    { name = "websockets", specifier = ">=15.0.1" },
 ]
 
 [[package]]
