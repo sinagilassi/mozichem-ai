@@ -12,12 +12,27 @@ from langchain.chat_models import init_chat_model
 from langgraph.prebuilt import create_react_agent
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.tools import tool
 # local
 from mozichem_ai.models import stdioMCP, streamableHttpMCP
 from mozichem_ai.agents.mcp_manager import MCPManager
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
+
+# SECTION: tools
+
+
+@tool
+def multiply(a: int, b: int) -> int:
+    """Multiply two numbers."""
+    return a * b
+
+
+@tool
+def add(a: int, b: int) -> int:
+    """Add two numbers."""
+    return a + b
 
 
 class MoziChemAgent:
@@ -201,10 +216,12 @@ class MoziChemAgent:
             if self.client:
                 # get tools
                 tools = await self.client.get_tools()
+                # append custom tools
+                tools.extend([multiply, add])
             else:
                 logger.warning(
                     "MCP client is not initialized. No tools will be available.")
-                tools = []
+                tools = [multiply, add]
 
             # SECTION: memory saver
             if self._memory_mode:

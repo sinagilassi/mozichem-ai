@@ -1,5 +1,4 @@
 # import libs
-import asyncio
 import os
 import logging
 # python dot env
@@ -49,7 +48,7 @@ mcp_source = {
 mcp_source = None
 
 # NOTE: agent prompt
-agent_prompt = """You are a helpful assistant that can perform various tasks using tools provided by the EOS Models and Flash Calculations MCP servers.
+agent_prompt = """You are a helpful assistant that can perform various tasks using tools provided by the EOS Models and Flash Calculations MCP servers, as well as basic arithmetic operations.
 You can use tools to perform calculations, retrieve data, and assist with various tasks.
 Based on the results from the tools, you will provide a final answer to the user.
 """

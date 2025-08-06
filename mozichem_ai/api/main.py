@@ -1,6 +1,7 @@
 # import libs
 import logging
 import time
+import json
 from typing import (
     Dict,
     Union,
@@ -16,7 +17,12 @@ from fastapi import (
 from pathlib import Path
 # langchain
 from langchain_core.runnables import RunnableConfig
-from langchain_core.messages import ToolMessage, AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import (
+    ToolMessage,
+    AIMessage,
+    HumanMessage,
+    SystemMessage
+)
 # locals
 from .ai_api import MoziChemAIAPI
 from ..agents import create_agent
@@ -41,6 +47,9 @@ logger = logging.getLogger(__name__)
 # temperature and max_tokens for the LLM
 DEFAULT_TEMPERATURE = 0.0
 DEFAULT_MAX_TOKENS = 2048
+
+
+# SECTION: create_api function
 
 
 async def create_api(
@@ -153,7 +162,7 @@ async def create_api(
     async def broadcast_agent_log(log: AgentMessage):
         for ws in list(websocket_clients):
             try:
-                await ws.send_text(log)
+                await ws.send_text(json.dumps(log.model_dump()))
             except Exception:
                 websocket_clients.remove(ws)
 
