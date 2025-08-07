@@ -46,11 +46,15 @@ class ChatMessage(BaseModel):
     )
 
 
+# message types
+MessageType = Literal["user", "assistant", "system", "tool", "unknown"]
+
+
 class AgentMessage(BaseModel):
     """
     Model for agent messages in the chat.
     """
-    type: Literal["user", "ai", "system", "tool", "unknown"] = Field(
+    type: MessageType = Field(
         ...,
         description="Type of the message, either 'user', 'assistant', 'system', or 'tool'"
     )

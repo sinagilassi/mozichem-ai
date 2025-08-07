@@ -51,7 +51,7 @@ def agent_message_analyzer(
         elif isinstance(message, AIMessage):
             # tool calls
             return AgentMessage(
-                type="ai",
+                type="assistant",
                 content=message.content,
                 tool_calls=message.tool_calls if hasattr(
                     message, 'tool_calls') else None,
