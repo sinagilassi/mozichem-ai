@@ -1025,7 +1025,7 @@ requires-dist = [
     { name = "langchain-google-genai", specifier = ">=2.1.8" },
     { name = "langchain-mcp-adapters", specifier = ">=0.1.8" },
     { name = "langchain-openai", specifier = ">=0.3.27" },
-    { name = "langgraph", specifier = ">=0.6.2" },
+    { name = "langgraph", specifier = ">=0.6.3" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
     { name = "python-dotenv", specifier = ">=1.1.1" },

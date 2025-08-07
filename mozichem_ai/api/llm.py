@@ -1,6 +1,6 @@
 # import libs
 import logging
-from fastapi import HTTPException, APIRouter
+from fastapi import HTTPException, APIRouter, Response
 # local imports
 from ..llms import LlmManager
 from ..config import llm_providers
@@ -15,8 +15,8 @@ llm_router = APIRouter()
 # SECTION: routes
 
 
-@llm_router.get("/llm/ping", response_model=bool)
-async def check_llm(
+@llm_router.post("/llm/ping", response_model=bool)
+async def ping_llm(
     model_provider: str,
     model_name: str,
 ):
@@ -50,7 +50,10 @@ async def check_llm(
         # SECTION: ping the model
         response = llm_manager.ping()
 
-        return response
+        return Response(
+            content=str(response).lower(),
+            media_type="application/json"
+        )
     except Exception as e:
         logger.error(f"Error initializing LLM: {e}")
         raise HTTPException(status_code=500, detail=str(e))

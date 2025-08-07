@@ -116,7 +116,7 @@ class LlmManager:
 
             # SECTION: initialize model
             model: BaseChatModel = init_chat_model(
-                model_name=model_name,
+                model=model_name,
                 model_provider=model_provider,
                 **kwargs
             )

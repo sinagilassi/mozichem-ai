@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def mozichem_chat(
+    model_provider: str,
     model_name: str,
     agent_name: str,
     agent_prompt: str,
@@ -43,6 +44,8 @@ def mozichem_chat(
 
     Parameters
     ----------
+    model_provider : str
+        The provider of the LLM (e.g., "openai", "google", "anthropic").
     model_name : str
         The name of the model to be used for the agent.
     agent_name : str
@@ -82,6 +85,7 @@ def mozichem_chat(
     try:
         # SECTION: Create the FastAPI application instance
         app_instance: FastAPI = asyncio.run(create_api(
+            model_provider=model_provider,
             model_name=model_name,
             agent_name=agent_name,
             agent_prompt=agent_prompt,
