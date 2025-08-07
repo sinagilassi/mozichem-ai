@@ -76,6 +76,8 @@ def mozichem_chat(
             The version of the API, by default "No version set".
         - description: str, optional
             A description of the API, by default "No description set".
+        - open_browser: bool, optional
+            Whether to open the web UI in a browser, by default True.
 
     Returns
     -------
@@ -83,6 +85,10 @@ def mozichem_chat(
         This function does not return anything. It opens web UI for MoziChem Chat.
     """
     try:
+        # SECTION: Validate inputs
+        # open browser
+        open_browser = kwargs.get("open_browser", True)
+
         # SECTION: Create the FastAPI application instance
         app_instance: FastAPI = asyncio.run(create_api(
             model_provider=model_provider,
@@ -129,7 +135,13 @@ def mozichem_chat(
 
         # SECTION: frontend and backend settings
         # NOTE: Open web UI for MoziChem Chat
-        webbrowser.open(f"http://{host}:{port}")
+        if open_browser:
+            # log
+            logger.info(f"Opening web UI at http://{host}:{port}")
+            # open in browser
+            webbrowser.open(f"http://{host}:{port}")
+
+        # SECTION: Run the FastAPI application
         # NOTE: Run the FastAPI application
         uvicorn.run(
             app_instance,

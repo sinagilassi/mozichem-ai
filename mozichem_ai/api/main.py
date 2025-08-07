@@ -541,6 +541,7 @@ async def create_api(
 
             # NOTE: Measure end time and calculate response time
             end_time = time.time()
+            # time unit is seconds
             response_time = end_time - start_time
 
             # SECTION: Check response and return the last message
