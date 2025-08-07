@@ -535,8 +535,9 @@ async def create_api(
                         # agent message analyzer
                         agent_message = agent_message_analyzer(message)
 
-                        # broadcast the log to all websocket clients
-                        await broadcast_agent_log(agent_message)
+                        # LINK: broadcast the log to all websocket clients
+                        if agent_message:
+                            await broadcast_agent_log(agent_message)
 
             # NOTE: Measure end time and calculate response time
             end_time = time.time()

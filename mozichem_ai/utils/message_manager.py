@@ -1,7 +1,7 @@
 # import libs
 import logging
 from fastapi import HTTPException
-from typing import Union
+from typing import Union, List
 from langchain_core.messages import (
     ToolMessage, AIMessage, HumanMessage, SystemMessage
 )
@@ -13,12 +13,14 @@ logger = logging.getLogger(__name__)
 
 
 def agent_message_analyzer(
-        message: Union[
-            ToolMessage,
-            AIMessage,
-            HumanMessage,
-            SystemMessage
-        ]) -> AgentMessage:
+    message: Union[
+        ToolMessage,
+        AIMessage,
+        HumanMessage,
+        SystemMessage
+    ],
+    ignore_messages: List[str] = ['HumanMessage', 'SystemMessage']
+) -> AgentMessage | None:
     """
     Analyzes a list of messages and returns a summary of the content.
 
@@ -27,12 +29,24 @@ def agent_message_analyzer(
     message : Union[ToolMessage, AIMessage, HumanMessage, SystemMessage]
         A message object from the LangChain library, which can be of type ToolMessage, AIMessage,
         HumanMessage, or SystemMessage.
+    ignore_messages : List[str], optional
+        A list of message types to ignore during analysis. Default is ['HumanMessage', 'SystemMessage'].
     """
     try:
+        # SECTION: ignore message types
+        message_type = type(message).__name__
+        if message_type in ignore_messages:
+            return None
+
         # SECTION: validate message type
         if not isinstance(
             message,
-            (ToolMessage, AIMessage, HumanMessage, SystemMessage)
+            (
+                ToolMessage,
+                AIMessage,
+                HumanMessage,
+                SystemMessage
+            )
         ):
             logger.error(f"Invalid message type: {type(message)}")
 
@@ -44,12 +58,12 @@ def agent_message_analyzer(
                 type="tool",
                 content=message.content,
                 tool_calls=None,
-                name=message.name if hasattr(message, 'name') else None,
-                tool_call_id=message.tool_call_id if hasattr(
-                    message, 'tool_call_id') else None
+                name=message.name,
+                tool_call_id=message.tool_call_id
             )
         elif isinstance(message, AIMessage):
-            # tool calls
+            # NOTE: AIMessage can contain tool calls
+            # tool calls message or assistant message
             return AgentMessage(
                 type="assistant",
                 content=message.content,
