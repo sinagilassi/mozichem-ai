@@ -18,10 +18,7 @@ from pathlib import Path
 # langchain
 from langchain_core.runnables import RunnableConfig
 from langchain_core.messages import (
-    ToolMessage,
-    AIMessage,
     HumanMessage,
-    SystemMessage
 )
 # locals
 from .ai_api import MoziChemAIAPI
@@ -53,6 +50,7 @@ DEFAULT_MAX_TOKENS = 2048
 
 
 async def create_api(
+    model_provider: str,
     model_name: str,
     agent_name: str,
     agent_prompt: str,
@@ -72,6 +70,8 @@ async def create_api(
 
     Parameters
     ----------
+    model_provider : str
+        The provider of the model to be used (e.g., "openai", "google").
     model_name : str
         The name of the model to be used for the agent.
     agent_name : str
@@ -122,6 +122,7 @@ async def create_api(
     # NOTE: agent initialization if app.state.agent does not exist
     if not hasattr(app.state, "agent"):
         app.state.agent = await create_agent(
+            model_provider=model_provider,
             model_name=model_name,
             agent_name=agent_name,
             agent_prompt=agent_prompt,
@@ -174,6 +175,7 @@ async def create_api(
         """
         try:
             app.state.agent = await create_agent(
+                model_provider=model_provider,
                 model_name=model_name,
                 agent_name=agent_name,
                 agent_prompt=agent_prompt,
@@ -220,6 +222,7 @@ async def create_api(
         """
         try:
             # SECTION: extract parameters from the agent_config
+            model_provider_ = agent_config.model_provider
             model_name_ = agent_config.model_name
             agent_name_ = agent_config.agent_name
             agent_prompt_ = agent_config.agent_prompt
@@ -228,9 +231,11 @@ async def create_api(
 
             # SECTION: validate the agent configuration
             # NOTE: update the initial arguments
-            nonlocal model_name, agent_name, agent_prompt, mcp_source, memory_mode
+            nonlocal model_provider, model_name, agent_name, agent_prompt, mcp_source, memory_mode
 
             # update the initial arguments
+            if model_provider_ is not None:
+                model_provider = model_provider_
             if model_name_ is not None:
                 model_name = model_name_
             if agent_name_ is not None:
@@ -258,6 +263,7 @@ async def create_api(
 
             # NOTE: create or update the agent in app.state
             app.state.agent = await create_agent(
+                model_provider=model_provider,
                 model_name=model_name,
                 agent_name=agent_name,
                 agent_prompt=agent_prompt,
@@ -284,11 +290,14 @@ async def create_api(
         """
         try:
             # SECTION: extract parameters from the llm_config
+            model_provider_ = llm_config.model_provider
             model_name_ = llm_config.model_name
             temperature_ = llm_config.temperature
             max_tokens_ = llm_config.max_tokens
 
             # NOTE: update the agent's LLM configuration
+            if model_provider_ is not None:
+                model_provider = model_provider_
             if model_name_ is not None:
                 model_name = model_name_
             if temperature_ is not None:
@@ -304,6 +313,7 @@ async def create_api(
 
             # SECTION: reinitialize the agent with the new LLM configuration
             app.state.agent = await create_agent(
+                model_provider=model_provider,
                 model_name=model_name,
                 agent_name=agent_name,
                 agent_prompt=agent_prompt,

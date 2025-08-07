@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 async def create_agent(
+    model_provider: str,
     model_name: str,
     agent_name: str,
     agent_prompt: str,
@@ -35,6 +36,8 @@ async def create_agent(
 
     Parameters
     ----------
+    model_provider : str
+        The provider of the model (e.g., "openai", "google").
     model_name : str
         The name of the model to be used for the agent.
     agent_name : str
@@ -56,6 +59,7 @@ async def create_agent(
     try:
         # SECTION: create MoziChemAgent
         MoziChemAgent_ = MoziChemAgent(
+            model_provider,
             model_name,
             agent_name,
             agent_prompt,

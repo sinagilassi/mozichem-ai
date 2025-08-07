@@ -57,6 +57,7 @@ class MoziChemAgent:
 
     def __init__(
         self,
+        model_provider: str,
         model_name: str,
         agent_name: str,
         agent_prompt: str,
@@ -76,6 +77,8 @@ class MoziChemAgent:
 
         Parameters
         ----------
+        model_provider : str
+            The provider of the model (e.g., "openai", "google").
         model_name : str
             The name of the model to be used for the agent.
         agent_name : str
@@ -90,6 +93,7 @@ class MoziChemAgent:
             Additional keyword arguments for future extensions.
         '''
         # NOTE: set attributes
+        self._model_provider = model_provider
         self._model_name = model_name
         self._agent_name = agent_name
         self._agent_prompt = agent_prompt
@@ -132,6 +136,7 @@ class MoziChemAgent:
             # SECTION: initialize the LLM
             self.llm = init_chat_model(
                 self._model_name,
+                model_provider=self._model_provider,
                 temperature=self._temperature,
                 max_tokens=self._max_tokens
             )

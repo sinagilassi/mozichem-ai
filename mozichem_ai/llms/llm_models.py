@@ -2,11 +2,14 @@
 import logging
 from langchain.chat_models import init_chat_model
 from typing import (
-    Any,
-    Literal
+    Optional
 )
 # langchain
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain.chat_models.base import BaseChatModel
+# local
+from ..config import llm_providers
+
 # NOTE: logger
 logger = logging.getLogger(__name__)
 
@@ -26,14 +29,17 @@ class LlmManager:
 
     def __init__(
         self,
-        model_provider: Literal["openai", "google", "anthropic"],
+        model_provider: str,
         model_name: str, **kwargs
     ):
         # NOTE set attributes
-        self.model_provider = model_provider
-        self.model_name = model_name
+        self.model_provider: str = model_provider
+        self.model_name: str = model_name
         self.kwargs = kwargs
-        self.model = None
+        self.model: Optional[BaseChatModel] = None
+
+        # SECTION: initialize the model
+        self.init()
 
     def init(self):
         """
@@ -84,7 +90,7 @@ class LlmManager:
         model_provider: str,
         model_name: str,
         **kwargs
-    ) -> Any:
+    ) -> BaseChatModel:
         """
         Initialize and return a chat model based on the specified model name.
 
@@ -99,18 +105,17 @@ class LlmManager:
 
         Returns
         -------
-        model: Any
+        model: BaseChatModel
             The initialized chat model.
         """
         try:
             # SECTION: validate model provider
-            valid_providers = ["openai", "google", "anthropic"]
-            if model_provider not in valid_providers:
+            if model_provider not in llm_providers:
                 raise ValueError(
-                    f"Invalid model provider: {model_provider}. Supported providers are: {valid_providers}")
+                    f"Invalid model provider: {model_provider}. Supported providers are: {llm_providers}")
 
             # SECTION: initialize model
-            model = init_chat_model(
+            model: BaseChatModel = init_chat_model(
                 model_name=model_name,
                 model_provider=model_provider,
                 **kwargs

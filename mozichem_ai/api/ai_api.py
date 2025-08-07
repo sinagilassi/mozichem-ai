@@ -4,6 +4,7 @@ from typing import Optional, List
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 # local imports
+from .llm import llm_router
 
 
 # NOTE: logger
@@ -59,6 +60,14 @@ class MoziChemAIAPI:
             raise HTTPException(
                 status_code=500, detail="Middleware setup failed")
 
+        # SECTION: Register API routers
+        try:
+            self._register_routers()
+        except Exception as e:
+            logger.error(f"Failed to register routers: {e}")
+            raise HTTPException(
+                status_code=500, detail="Router registration failed") from e
+
     @property
     def cors_origins(self) -> List[str]:
         """Returns the list of allowed CORS origins."""
@@ -96,3 +105,7 @@ class MoziChemAIAPI:
             allow_methods=["*"],  # Allow all methods
             allow_headers=["*"],  # Allow all headers
         )
+
+    def _register_routers(self):
+        """Register API routers to the FastAPI application."""
+        self.app.include_router(llm_router)

@@ -28,6 +28,8 @@ if env_val is not None:
     os.environ['OPENAI_API_KEY'] = env_val
 
 # SECTION: inputs
+# NOTE: model provider
+model_provider = "openai"
 # NOTE: model name
 model_name = "gpt-4o-mini"
 
@@ -67,6 +69,7 @@ Based on the results from the tools, you will provide a final answer to the user
 # SECTION: Run the FastAPI application
 if __name__ == "__main__":
     app_instance = asyncio.run(create_api(
+        model_provider=model_provider,
         model_name=model_name,
         agent_name="MoziChemAgent",
         agent_prompt=agent_prompt,

@@ -5,11 +5,14 @@ from .settings import (
     __description__,
     get_config
 )
+# constants
+from .constants import llm_providers
 
 __all__ = [
     "__author__",
     "__version__",
     "__author_email__",
     "__description__",
-    "get_config"
+    "get_config",
+    "llm_providers"
 ]

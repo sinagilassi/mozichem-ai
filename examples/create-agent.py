@@ -30,6 +30,8 @@ if env_val is not None:
     os.environ['OPENAI_API_KEY'] = env_val
 
 # SECTION: inputs
+# NOTE: model provider
+model_provider = "openai"
 # NOTE: model name
 model_name = "gpt-4o-mini"
 
@@ -49,6 +51,9 @@ mcp_source = {
     }
 }
 
+# empty mcp source
+mcp_source = None
+
 # NOTE: agent prompt
 agent_prompt = """You are a helpful assistant that can perform various tasks using tools provided by the EOS Models and Flash Calculations MCP servers.
 You can use tools to perform calculations, retrieve data, and assist with various tasks.
@@ -66,6 +71,7 @@ async def run_agent():
     try:
         # NOTE: create agent
         agent = await create_agent(
+            model_provider=model_provider,
             model_name=model_name,
             agent_name="TestAgent",
             agent_prompt=agent_prompt,

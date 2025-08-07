@@ -4,6 +4,10 @@ from pydantic import BaseModel, Field
 
 
 class AgentConfig(BaseModel):
+    model_provider: Optional[str] = Field(
+        default=None,
+        description="Provider of the LLM model (e.g., 'openai', 'google')"
+    )
     model_name: Optional[str] = Field(
         default=None,
         description="Name of the LLM model to use"
@@ -32,6 +36,10 @@ class AgentConfig(BaseModel):
 
 
 class LlmConfig(BaseModel):
+    model_provider: str = Field(
+        default="openai",
+        description="Provider of the LLM model (e.g., 'openai', 'google')"
+    )
     model_name: str = Field(
         default="gpt-4-mini",
         description="Name of the LLM model to use"

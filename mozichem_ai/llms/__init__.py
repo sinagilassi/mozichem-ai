@@ -1,5 +1,5 @@
-from .llm_models import initialize_model
+from .llm_models import LlmManager
 
 __all__ = [
-    "initialize_model",
+    "LlmManager",
 ]
