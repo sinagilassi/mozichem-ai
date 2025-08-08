@@ -14,6 +14,7 @@ from fastapi import (
     Response,
     WebSocket
 )
+from fastapi.responses import JSONResponse
 from pathlib import Path
 # langchain
 from langchain_core.runnables import RunnableConfig
@@ -324,9 +325,11 @@ async def create_api(
 
             # NOTE: return success message
             logger.info("LLM configured successfully")
-            return Response(
-                content='{"message": "LLM configured successfully"}',
-                media_type="application/json",
+            return JSONResponse(
+                content={
+                    "message": f"LLM configured successfully with model: {model_provider} - {model_name}, temperature: {app.state.temperature}, max_tokens: {app.state.max_tokens}",
+                    "success": True
+                },
                 status_code=200
             )
         except Exception as e:

@@ -1,9 +1,11 @@
 # import libs
 import logging
-from fastapi import HTTPException, APIRouter, Response
+from fastapi import HTTPException, APIRouter
+from fastapi.responses import JSONResponse
 # local imports
 from ..llms import LlmManager
 from ..config import llm_providers
+from ..models import LlmConfig
 
 
 # NOTE: logger
@@ -17,20 +19,40 @@ llm_router = APIRouter()
 
 @llm_router.post("/llm/ping", response_model=bool)
 async def ping_llm(
-    model_provider: str,
-    model_name: str,
+    request: LlmConfig
 ):
     """
     Initialize the LLM with the given parameters.
 
     Parameters
     ----------
-    model_provider : str
-        The provider of the LLM (e.g., "openai", "google", "anthropic").
-    model_name : str
-        The name of the LLM model to initialize (e.g., "gpt-3.5-turbo", "gemini-1.5-pro").
+    request : LlmConfig
+        Configuration for the LLM, including:
+    - model_provider: str
+        The provider of the LLM model (e.g., "openai", "google").
+    - model_name: str
+        The name of the LLM model to use (e.g., "gpt-3.5-turbo", "gemini-1.5-pro").
+    - temperature: float
+        The temperature for the LLM model, controlling randomness in responses.
+    - max_tokens: int
+        The maximum number of tokens for the LLM model response.
     """
     try:
+        # SECTION: extract parameters
+        model_provider = request.model_provider
+        model_name = request.model_name
+        temperature = request.temperature
+        max_tokens = request.max_tokens
+
+        logger.info(
+            f"Initializing LLM with provider: {model_provider}, model: {model_name}, temperature: {temperature}, max_tokens: {max_tokens}")
+
+        # NOTE: add kwargs for LLM manager
+        kwargs = {
+            "temperature": temperature,
+            "max_tokens": max_tokens
+        }
+
         # SECTION: validate inputs
         if not model_provider or not model_name:
             raise HTTPException(
@@ -50,10 +72,7 @@ async def ping_llm(
         # SECTION: ping the model
         response = llm_manager.ping()
 
-        return Response(
-            content=str(response).lower(),
-            media_type="application/json"
-        )
+        return JSONResponse(content=response)
     except Exception as e:
         logger.error(f"Error initializing LLM: {e}")
         raise HTTPException(status_code=500, detail=str(e))
