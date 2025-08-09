@@ -25,6 +25,11 @@ env_val = os.getenv('OPENAI_API_KEY')
 if env_val is not None:
     os.environ['OPENAI_API_KEY'] = env_val
 
+# tavily
+env_val = os.getenv('TAVILY_API_KEY')
+if env_val is not None:
+    os.environ['TAVILY_API_KEY'] = env_val
+
 # SECTION: inputs
 # NOTE: model provider
 model_provider = "openai"
@@ -49,8 +54,21 @@ mcp_source = {
 
 mcp_source = None
 
+# mcp source 2
+mcp_source = {
+    "tavily-remote": {
+        "command": "npx",
+        "args": [
+            "-y",
+            "mcp-remote",
+            f"https://mcp.tavily.com/mcp/?tavilyApiKey={os.getenv('TAVILY_API_KEY')}"
+        ],
+        "transport": "stdio",
+    }
+}
+
 # NOTE: agent prompt
-agent_prompt = """You are a helpful assistant that can perform various tasks using tools provided by the EOS Models and Flash Calculations MCP servers, as well as basic arithmetic operations.
+agent_prompt = """You are a helpful assistant that can perform various tasks using tools provided by MCP servers, as well as basic arithmetic operations.
 You can use tools to perform calculations, retrieve data, and assist with various tasks.
 Based on the results from the tools, you will provide a final answer to the user.
 """

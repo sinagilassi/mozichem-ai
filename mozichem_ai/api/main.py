@@ -238,6 +238,57 @@ async def create_api(
         """
         return await agent_initialization()
 
+    @app.get("/mcp-source")
+    async def get_mcp_source():
+        """
+        Endpoint to get the current MCP source configuration.
+        """
+        return JSONResponse(
+            content={
+                "message": "MCP source configuration retrieved successfully",
+                "success": True,
+                "data": app.state.mcp_source,
+            },
+            status_code=200
+        )
+
+    @app.get("/agent-config")
+    async def get_agent_config():
+        """
+        Endpoint to get the current agent configuration.
+        """
+        return JSONResponse(
+            content={
+                "message": "Agent configuration retrieved successfully",
+                "success": True,
+                "data": {
+                    "model_provider": app.state.model_provider,
+                    "model_name": app.state.model_name,
+                    "agent_name": app.state.agent_name,
+                    "agent_prompt": app.state.agent_prompt,
+                    "mcp_source": app.state.mcp_source,
+                    "memory_mode": app.state.memory_mode
+                },
+            },
+            status_code=200
+        )
+
+    @app.get("/llm-config")
+    async def get_llm_config():
+        """
+        Endpoint to get the current LLM configuration.
+        """
+        return JSONResponse(
+            content={
+                "model_provider": app.state.model_provider,
+                "model_name": app.state.model_name,
+                "temperature": app.state.temperature,
+                "max_tokens": app.state.max_tokens,
+                "success": True
+            },
+            status_code=200
+        )
+
     @app.post("/agent-config")
     async def set_agent_config(
         agent_config: AgentConfig
