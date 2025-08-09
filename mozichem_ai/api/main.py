@@ -58,12 +58,13 @@ async def create_api(
     mcp_source: Optional[
         Union[
         Dict[str, Dict[str, str]],
-        Dict[str, Dict[str, str | List[str]]],
+        Dict[str, Dict[str, str] | Dict[str, str]],
+        Dict[str, Dict[str, str | List[str] | Dict[str, str]]],
         str,
         Path
         ]
     ] = None,
-    memory_mode: bool = False,
+    memory_mode: bool = True,
     **kwargs
 ) -> FastAPI:
     """
@@ -79,7 +80,7 @@ async def create_api(
         The name of the agent.
     agent_prompt : str
         The prompt to be used for the agent.
-    mcp_source : Dict[str, Dict[str, str]] | Dict[str, Dict[str, str | List[str]]], | str | Path, optional
+    mcp_source : Optional[Union[Dict[str, Dict[str, str]], Dict[str, Dict[str, str | List[str]]], str, Path]]
         A dictionary containing the MCP configurations or a path to a YAML file containing the MCP configurations.
     memory_mode : bool, optional
         Whether to enable memory mode for the agent, by default False.
@@ -272,9 +273,13 @@ async def create_api(
                 memory_mode=memory_mode,
                 **kwargs
             )
-            return Response(
-                content='{"message": "Agent configured successfully"}',
-                media_type="application/json",
+
+            # return
+            return JSONResponse(
+                content={
+                    "message": f"Agent configured successfully with model: {model_provider} - {model_name}, agent: {agent_name}, prompt: {agent_prompt}, mcp_source: {mcp_source}, memory_mode: {memory_mode}",
+                    "success": True
+                },
                 status_code=200
             )
         except Exception as e:

@@ -13,6 +13,10 @@ class stdioMCP(BaseModel):
         default_factory=list,
         description="Arguments for the command"
     )
+    env: Optional[Dict[str, str]] = Field(
+        default_factory=dict,
+        description="Environment variables for the command"
+    )
 
 
 class streamableHttpMCP(BaseModel):
@@ -24,6 +28,11 @@ class streamableHttpMCP(BaseModel):
         description="Transport method for the MCP"
     )
     url: str = Field(..., description="URL for the MCP")
+    env: Optional[Dict[str, str]] = Field(
+        default_factory=dict,
+        description="Environment variables for the HTTP MCP"
+    )
 
 
-MCP = Dict[str, str] | Dict[str, str | List[str]]
+MCP = Dict[str, str] | Dict[str, str | Dict[str, str]
+                            ] | Dict[str, str | List[str] | Dict[str, str]]

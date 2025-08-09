@@ -17,7 +17,8 @@ class AgentDetails(BaseModel):
     mcp_source: Optional[
         Union[
             Dict[str, Dict[str, str]],
-            Dict[str, Dict[str, str | List[str]]],
+            Dict[str, Dict[str, str] | Dict[str, str]],
+            Dict[str, Dict[str, str | List[str] | Dict[str, str]]],
             str,
             Path
         ]

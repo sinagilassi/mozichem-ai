@@ -35,19 +35,19 @@ model_name = "gpt-4o-mini"
 mcp_source = {
     "eos-models-mcp": {
         "transport": "streamable_http",
-        "url": "http://127.0.0.1:8000/eos-models-mcp/mcp/"
+        "url": "http://127.0.0.1:8001/eos-models-mcp/mcp/"
     },
     "flash-calculations-mcp": {
         "transport": "streamable_http",
-        "url": "http://127.0.0.1:8000/flash-calculations-mcp/mcp/"
+        "url": "http://127.0.0.1:8001/flash-calculations-mcp/mcp/"
     },
     "thermodynamic-properties-mcp": {
         "transport": "streamable_http",
-        "url": "http://127.0.0.1:8000/thermodynamic-properties-mcp/mcp/"
+        "url": "http://127.0.0.1:8001/thermodynamic-properties-mcp/mcp/"
     }
 }
 
-mcp_source = None
+# mcp_source = None
 
 # NOTE: agent prompt
 agent_prompt = """You are a helpful assistant that can perform various tasks using tools provided by the EOS Models and Flash Calculations MCP servers, as well as basic arithmetic operations.

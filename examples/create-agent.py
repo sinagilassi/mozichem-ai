@@ -52,7 +52,7 @@ mcp_source = {
 }
 
 # empty mcp source
-mcp_source = None
+# mcp_source = None
 
 # NOTE: agent prompt
 agent_prompt = """You are a helpful assistant that can perform various tasks using tools provided by the EOS Models and Flash Calculations MCP servers.

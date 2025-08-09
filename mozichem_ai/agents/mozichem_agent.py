@@ -64,7 +64,8 @@ class MoziChemAgent:
         mcp_source: Optional[
             Union[
             Dict[str, Dict[str, str]],
-            Dict[str, Dict[str, str | List[str]]],
+            Dict[str, Dict[str, str] | Dict[str, str]],
+            Dict[str, Dict[str, str | List[str] | Dict[str, str]]],
             str,
             Path
             ]
@@ -187,26 +188,31 @@ class MoziChemAgent:
         Create and return a MultiServerMCPClient instance with the MCP configurations.
         '''
         try:
-            # SECTION: mcp feed
-            # check if mcp_stdio_dict and mcp_streamable_http_dict are empty
-            if (
-                not self.mcp_stdio_dict and
-                not self.mcp_streamable_http_dict
-            ):
-                # combine stdio and streamable http mcp dicts
-                mcp_feed: Dict[str, Any] = {
-                    **self.mcp_stdio_dict,
-                    **self.mcp_streamable_http_dict
-                }
+            # log
+            logger.info(
+                "Creating MCP client with the provided configurations.")
+            # a = self.mcp_stdio_dict
+            # b = self.mcp_streamable_http_dict
 
-                # SECTION: create MCP client
+            # SECTION: mcp feed
+            # combine stdio and streamable http mcp dicts
+            mcp_feed: Dict[str, Any] = {
+                **self.mcp_stdio_dict,
+                **self.mcp_streamable_http_dict
+            }
+
+            # SECTION: create MCP client
+            # check if mcp is empty
+            if not mcp_feed:
+                self.client = None
+                logger.warning(
+                    "No valid MCP configurations found. Client will not be created.")
+            else:
                 self.client = MultiServerMCPClient(
                     mcp_feed
                 )
-            else:
-                logger.warning(
-                    "No valid MCP configurations found. Client will not be created.")
-                self.client = None
+                logger.info("MCP client created successfully.")
+
         except Exception as e:
             logger.error(f"Failed to create MCP client: {e}")
             raise RuntimeError(f"Failed to create MCP client: {e}") from e
@@ -218,29 +224,44 @@ class MoziChemAgent:
         try:
             # SECTION: client tools retrieval
             # check
-            if self.client:
-                # get tools
-                tools = await self.client.get_tools()
-                # append custom tools
-                tools.extend([multiply, add])
-            else:
-                logger.warning(
-                    "MCP client is not initialized. No tools will be available.")
+            try:
+                if self.client:
+                    # get tools
+                    tools = await self.client.get_tools()
+                    # append custom tools
+                    tools.extend([multiply, add])
+                    # log
+                    logger.info(
+                        f"Retrieved {len(tools)} tools from MCP client and added custom tools.")
+                else:
+                    logger.warning(
+                        "MCP client is not initialized. No tools will be available.")
+                    tools = [multiply, add]
+            except Exception as e:
+                logger.error(f"Failed to retrieve tools from MCP client: {e}")
                 tools = [multiply, add]
 
             # SECTION: memory saver
-            if self._memory_mode:
-                memory = MemorySaver()
-            else:
+            try:
+                if self._memory_mode:
+                    memory = MemorySaver()
+                else:
+                    memory = None
+            except Exception as e:
+                logger.error(f"Failed to initialize memory saver: {e}")
                 memory = None
 
             # SECTION: create agent
-            agent = create_react_agent(
-                model=self.llm,
-                tools=tools,
-                prompt=self._agent_prompt,
-                checkpointer=memory
-            )
+            try:
+                agent = create_react_agent(
+                    model=self.llm,
+                    tools=tools,
+                    prompt=self._agent_prompt,
+                    checkpointer=memory
+                )
+            except Exception as e:
+                logger.error(f"Failed to create agent: {e}")
+                raise RuntimeError(f"Failed to create agent: {e}") from e
 
             # return agent
             return agent

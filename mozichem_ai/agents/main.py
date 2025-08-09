@@ -23,7 +23,8 @@ async def create_agent(
     mcp_source: Optional[
         Union[
         Dict[str, Dict[str, str]],
-        Dict[str, Dict[str, str | List[str]]],
+        Dict[str, Dict[str, str] | Dict[str, str]],
+        Dict[str, Dict[str, str | List[str] | Dict[str, str]]],
         str,
         Path
         ]
@@ -44,7 +45,7 @@ async def create_agent(
         The name of the agent.
     agent_prompt : str
         The prompt to be used for the agent.
-    mcp_source : Dict[str, stdioMCP | streamableHttpMCP] | Path
+    mcp_source : Optional[Union[Dict[str, Dict[str, str]], Dict[str, Dict[str, str | List[str]]], str, Path]]
         A dictionary containing the MCP configurations or a path to a YAML file containing the MCP configurations.
     memory_mode : bool, optional
         Whether to enable memory mode for the agent, by default False.
