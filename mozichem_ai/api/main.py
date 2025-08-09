@@ -11,7 +11,6 @@ from typing import (
 from fastapi import (
     FastAPI,
     HTTPException,
-    Response,
     WebSocket
 )
 from fastapi.responses import JSONResponse
