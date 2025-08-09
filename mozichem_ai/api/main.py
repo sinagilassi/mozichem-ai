@@ -205,9 +205,11 @@ async def create_api(
                 memory_mode=memory_mode,
                 **kwargs
             )
-            return Response(
-                content='{"message": "Agent initialized successfully"}',
-                media_type="application/json",
+            return JSONResponse(
+                content={
+                    "message": "Agent initialized successfully",
+                    "success": True
+                },
                 status_code=200
             )
         except Exception as e:
@@ -222,9 +224,11 @@ async def create_api(
         """
         Root endpoint to check if the API is running.
         """
-        return Response(
-            content='{"message": "MoziChem AI API is running"}',
-            media_type="application/json",
+        return JSONResponse(
+            content={
+                "message": "MoziChem AI API is running",
+                "success": True
+            },
             status_code=200
         )
 
@@ -283,6 +287,14 @@ async def create_api(
             kwargs['temperature'] = app.state.temperature
             kwargs['max_tokens'] = app.state.max_tokens
 
+            # NOTE: update the app state
+            app.state.model_provider = model_provider
+            app.state.model_name = model_name
+            app.state.agent_name = agent_name
+            app.state.agent_prompt = agent_prompt
+            app.state.mcp_source = mcp_source
+            app.state.memory_mode = memory_mode
+
             # NOTE: create or update the agent in app.state
             app.state.agent = await create_agent(
                 model_provider=model_provider,
@@ -324,13 +336,27 @@ async def create_api(
             # NOTE: update the agent's LLM configuration
             if model_provider_ is not None:
                 model_provider = model_provider_
+                # set the app state
+                app.state.model_provider = model_provider_
+            else:
+                model_provider = app.state.model_provider
+
+            # NOTE: update the model_name
             if model_name_ is not None:
                 model_name = model_name_
+                # set the app state
+                app.state.model_name = model_name_
+            else:
+                model_name = app.state.model_name
+
+            # NOTE: update the temperature
             if temperature_ is not None:
                 # update the kwargs for temperature
                 kwargs['temperature'] = temperature_
                 # app sate
                 app.state.temperature = temperature_
+
+            # NOTE: update the max_tokens
             if max_tokens_ is not None:
                 # update the kwargs for max_tokens
                 kwargs['max_tokens'] = max_tokens_
