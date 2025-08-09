@@ -121,7 +121,27 @@ async def create_api(
     # NOTE: create fastapi app instance
     app = MoziChemAIAPI_.app
 
-    # NOTE: agent initialization if app.state.agent does not exist
+    # SECTION: app state configurations
+    # set initial llm configurations in app.state
+    app.state.temperature = kwargs.get(
+        'temperature', DEFAULT_TEMPERATURE)
+    app.state.max_tokens = kwargs.get(
+        'max_tokens', DEFAULT_MAX_TOKENS)
+
+    # model provider
+    app.state.model_provider = model_provider
+    # model name
+    app.state.model_name = model_name
+    # agent name
+    app.state.agent_name = agent_name
+    # agent prompt
+    app.state.agent_prompt = agent_prompt
+    # mcp source
+    app.state.mcp_source = mcp_source
+    # memory mode
+    app.state.memory_mode = memory_mode
+
+    # SECTION: agent initialization if app.state.agent does not exist
     if not hasattr(app.state, "agent"):
         app.state.agent = await create_agent(
             model_provider=model_provider,
