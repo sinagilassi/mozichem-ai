@@ -5,6 +5,7 @@ from typing import Union, List
 from langchain_core.messages import (
     ToolMessage, AIMessage, HumanMessage, SystemMessage
 )
+from langchain_core.messages.ai import UsageMetadata
 # local
 from ..models import AgentMessage, TokenMetadata
 
@@ -153,10 +154,29 @@ def message_token_counter(
             )
 
         # SECTION: create TokenMetadata
-        token_metadata = TokenMetadata(
-            input_tokens=agent_message.input_tokens or -1,
-            output_tokens=agent_message.output_tokens or -1
-        )
+        # NOTE: access to usage_metadata
+        if isinstance(message, AIMessage):
+            # get response metadata
+            if hasattr(message, 'usage_metadata'):
+                usage_metadata = message.usage_metadata
+            else:
+                usage_metadata = None
+
+        # check
+        if usage_metadata:
+            input_tokens = usage_metadata.get('input_tokens', -1)
+            output_tokens = usage_metadata.get('output_tokens', -1)
+
+            # set token metadata
+            token_metadata = TokenMetadata(
+                input_tokens=input_tokens,
+                output_tokens=output_tokens
+            )
+        else:
+            token_metadata = TokenMetadata(
+                input_tokens=-1,
+                output_tokens=-1
+            )
 
         return token_metadata
     except Exception as e:

@@ -701,37 +701,35 @@ async def create_api(
                     messages=messages,
                     input_tokens=input_tokens,
                     output_tokens=output_tokens
-                    )
-
                 )
             else:
                 # NOTE: no messages returned
                 logger.error("Agent response is not a list of messages.")
                 return ChatMessage(
-                    role = "assistant",
-                    content = "Agent response is not a list of messages.",
-                    thread_id = thread_id,
-                    response_time = response_time,
-                    timestamp = timestamp,
-                    messages = [],
-                    input_tokens = DEFAULT_INPUT_TOKENS,
-                    output_tokens = DEFAULT_OUTPUT_TOKENS
+                    role="assistant",
+                    content="Agent response is not a list of messages.",
+                    thread_id=thread_id,
+                    response_time=response_time,
+                    timestamp=timestamp,
+                    messages=[],
+                    input_tokens=DEFAULT_INPUT_TOKENS,
+                    output_tokens=DEFAULT_OUTPUT_TOKENS
                 )
         except Exception as e:
             logger.error(f"Error in user_agent_chat_stream: {e}")
             return ChatMessage(
-                role = "assistant",
-                content = f"Failed to process user message: {e}",
-                thread_id = thread_id,
-                response_time = None,
-                timestamp = timestamp,
-                messages = [],
-                input_tokens = DEFAULT_INPUT_TOKENS,
-                output_tokens = DEFAULT_OUTPUT_TOKENS
+                role="assistant",
+                content=f"Failed to process user message: {e}",
+                thread_id=thread_id,
+                response_time=None,
+                timestamp=timestamp,
+                messages=[],
+                input_tokens=DEFAULT_INPUT_TOKENS,
+                output_tokens=DEFAULT_OUTPUT_TOKENS
             )
 
     # SECTION: Return the FastAPI application instance
-    @ app.get("/app-info", response_model=ApiConfigSummary)
+    @app.get("/app-info", response_model=ApiConfigSummary)
     async def get_app_info():
         """
         Return app info, agent details, llm details, and overall settings as an ApiConfigSummary model.
@@ -742,29 +740,29 @@ async def create_api(
 
             # NOTE: app info
             app_info = AppInfo(
-                name = MoziChemAIAPI_.name,
-                version = MoziChemAIAPI_.version,
-                description = MoziChemAIAPI_.description,
+                name=MoziChemAIAPI_.name,
+                version=MoziChemAIAPI_.version,
+                description=MoziChemAIAPI_.description,
             )
 
             # NOTE: Agent details
             agent_details = AgentDetails(
-                exists = agent_obj is not None,
-                model_name = model_name,
-                agent_name = agent_name,
-                agent_prompt = agent_prompt,
-                mcp_source = mcp_source,
-                memory_mode = memory_mode
+                exists=agent_obj is not None,
+                model_name=model_name,
+                agent_name=agent_name,
+                agent_prompt=agent_prompt,
+                mcp_source=mcp_source,
+                memory_mode=memory_mode
             )
 
             # NOTE: LLM details
             llm_details = LlmDetails(
-                temperature = getattr(
+                temperature=getattr(
                     app.state,
                     "temperature",
                     DEFAULT_TEMPERATURE
                 ),
-                max_tokens = getattr(
+                max_tokens=getattr(
                     app.state,
                     "max_tokens",
                     DEFAULT_MAX_TOKENS
@@ -773,20 +771,20 @@ async def create_api(
 
             # NOTE: Overall settings
             overall_settings = OverallSettings(
-                cors_origins = MoziChemAIAPI_.cors_origins
+                cors_origins=MoziChemAIAPI_.cors_origins
             )
 
             # SECTION: Return the ApiConfigSummary model
             return ApiConfigSummary(
-                app = app_info,
-                agent = agent_details,
-                llm = llm_details,
-                settings = overall_settings
+                app=app_info,
+                agent=agent_details,
+                llm=llm_details,
+                settings=overall_settings
             )
         except Exception as e:
             logger.error(f"Error in get_app_info: {e}")
             raise HTTPException(
-                status_code = 500,
-                detail = f"Failed to retrieve app info: {e}"
+                status_code=500,
+                detail=f"Failed to retrieve app info: {e}"
             )
     return app
