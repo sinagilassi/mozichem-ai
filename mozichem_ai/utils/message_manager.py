@@ -6,7 +6,7 @@ from langchain_core.messages import (
     ToolMessage, AIMessage, HumanMessage, SystemMessage
 )
 # local
-from ..models import AgentMessage
+from ..models import AgentMessage, TokenMetadata
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -125,3 +125,41 @@ def agent_message_analyzer(
         logger.error(f"Error analyzing messages: {e}")
         raise HTTPException(
             status_code=500, detail="Failed to analyze messages") from e
+
+
+def message_token_counter(
+    message: Union[ToolMessage, AIMessage, HumanMessage, SystemMessage]
+) -> TokenMetadata:
+    """
+    Counts the tokens in a message and returns an AgentMessage with token counts.
+
+    Parameters
+    ----------
+    message : Union[ToolMessage, AIMessage, HumanMessage, SystemMessage]
+        A message object from the LangChain library.
+
+    Returns
+    -------
+    AgentMessage
+        An AgentMessage containing the token counts.
+    """
+    try:
+        # SECTION: analyze message content
+        agent_message = agent_message_analyzer(message)
+
+        if agent_message is None:
+            raise HTTPException(
+                status_code=400, detail="Invalid message type or content"
+            )
+
+        # SECTION: create TokenMetadata
+        token_metadata = TokenMetadata(
+            input_tokens=agent_message.input_tokens or -1,
+            output_tokens=agent_message.output_tokens or -1
+        )
+
+        return token_metadata
+    except Exception as e:
+        logger.error(f"Error counting tokens: {e}")
+        raise HTTPException(
+            status_code=500, detail="Failed to count tokens") from e

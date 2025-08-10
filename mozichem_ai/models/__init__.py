@@ -1,5 +1,11 @@
 from .mcp import stdioMCP, streamableHttpMCP, MCP
-from .chat import UserMessage, AssistantMessage, ChatMessage, AgentMessage
+from .chat import (
+    UserMessage,
+    AssistantMessage,
+    ChatMessage,
+    AgentMessage,
+    TokenMetadata
+)
 from .llm import AgentConfig, LlmConfig
 from .api import (
     AppInfo,
@@ -23,5 +29,6 @@ __all__ = [
     "LlmDetails",
     "OverallSettings",
     "ApiConfigSummary",
-    "AgentMessage"
+    "AgentMessage",
+    "TokenMetadata"
 ]

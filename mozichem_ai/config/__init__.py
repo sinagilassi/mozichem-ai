@@ -6,7 +6,7 @@ from .settings import (
     get_config
 )
 # constants
-from .constants import llm_providers
+from .constants import llm_providers, default_token_metadata
 
 __all__ = [
     "__author__",
@@ -14,5 +14,6 @@ __all__ = [
     "__author_email__",
     "__description__",
     "get_config",
-    "llm_providers"
+    "llm_providers",
+    "default_token_metadata"
 ]
