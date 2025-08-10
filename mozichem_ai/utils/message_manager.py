@@ -50,6 +50,16 @@ def agent_message_analyzer(
         ):
             logger.error(f"Invalid message type: {type(message)}")
 
+        # SECTION: extract data from message **response_metadata**
+        # NOTE: set input_tokens and output_tokens
+        if hasattr(message, 'response_metadata'):
+            response_metadata = message.response_metadata
+            output_tokens = getattr(response_metadata, 'output_tokens', 0)
+            input_tokens = getattr(response_metadata, 'input_tokens', 0)
+        else:
+            output_tokens = -1
+            input_tokens = -1
+
         # SECTION: analyze message content
         # NOTE: iterate through messages
         if isinstance(message, ToolMessage):
@@ -59,7 +69,9 @@ def agent_message_analyzer(
                 content=message.content,
                 tool_calls=None,
                 name=message.name,
-                tool_call_id=message.tool_call_id
+                tool_call_id=message.tool_call_id,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens
             )
         elif isinstance(message, AIMessage):
             # NOTE: AIMessage can contain tool calls
@@ -70,7 +82,9 @@ def agent_message_analyzer(
                 tool_calls=message.tool_calls if hasattr(
                     message, 'tool_calls') else None,
                 name=message.name if hasattr(message, 'name') else None,
-                tool_call_id=None
+                tool_call_id=None,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens
             )
 
         elif isinstance(message, HumanMessage):
@@ -80,7 +94,9 @@ def agent_message_analyzer(
                 content=message.content,
                 tool_calls=None,
                 name=message.name if hasattr(message, 'name') else None,
-                tool_call_id=None
+                tool_call_id=None,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens
             )
 
         elif isinstance(message, SystemMessage):
@@ -90,7 +106,9 @@ def agent_message_analyzer(
                 content=message.content,
                 tool_calls=None,
                 name=message.name if hasattr(message, 'name') else None,
-                tool_call_id=None
+                tool_call_id=None,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens
             )
         else:
             return AgentMessage(
@@ -98,7 +116,9 @@ def agent_message_analyzer(
                 content=message.content if hasattr(message, 'content') else "",
                 tool_calls=None,
                 name=None,
-                tool_call_id=None
+                tool_call_id=None,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens
             )
 
     except Exception as e:
