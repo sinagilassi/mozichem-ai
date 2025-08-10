@@ -40,19 +40,20 @@ model_name = "gpt-4o-mini"
 mcp_source = {
     "eos-models-mcp": {
         "transport": "streamable_http",
-        "url": "http://127.0.0.1:8001/eos-models-mcp/mcp/"
+        "url": "http://127.0.0.1:8001/eos-models-mcp/mcp/",
+        "env": {}
     },
     "flash-calculations-mcp": {
         "transport": "streamable_http",
-        "url": "http://127.0.0.1:8001/flash-calculations-mcp/mcp/"
+        "url": "http://127.0.0.1:8001/flash-calculations-mcp/mcp/",
+        "env": {}
     },
     "thermodynamic-properties-mcp": {
         "transport": "streamable_http",
-        "url": "http://127.0.0.1:8001/thermodynamic-properties-mcp/mcp/"
+        "url": "http://127.0.0.1:8001/thermodynamic-properties-mcp/mcp/",
+        "env": {}
     }
 }
-
-mcp_source = None
 
 # mcp source 2
 mcp_source = {
@@ -64,8 +65,11 @@ mcp_source = {
             f"https://mcp.tavily.com/mcp/?tavilyApiKey={os.getenv('TAVILY_API_KEY')}"
         ],
         "transport": "stdio",
+        "env": {}
     }
 }
+
+# mcp_source = None
 
 # NOTE: agent prompt
 agent_prompt = """You are a helpful assistant that can perform various tasks using tools provided by MCP servers, as well as basic arithmetic operations.
