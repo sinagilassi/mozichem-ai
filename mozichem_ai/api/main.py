@@ -407,6 +407,10 @@ async def create_api(
 
             # SECTION: update the mcp_source in app.state
             app.state.mcp_source = validated_config
+            # log
+            logger.info(
+                f"Updated MCP source validated_config: {validated_config}")
+            logger.info(f"Updated MCP source: {app.state.mcp_source}")
 
             # SECTION: reinitialize the agent with the new MCP configuration
             app.state.agent = await create_agent(
@@ -807,11 +811,12 @@ async def create_api(
             # NOTE: Agent details
             agent_details = AgentDetails(
                 exists=agent_obj is not None,
-                model_name=model_name,
-                agent_name=agent_name,
-                agent_prompt=agent_prompt,
-                mcp_source=mcp_source,
-                memory_mode=memory_mode
+                model_provider=app.state.model_provider,
+                model_name=app.state.model_name,
+                agent_name=app.state.agent_name,
+                agent_prompt=app.state.agent_prompt,
+                mcp_source=app.state.mcp_source,
+                memory_mode=app.state.memory_mode,
             )
 
             # NOTE: LLM details

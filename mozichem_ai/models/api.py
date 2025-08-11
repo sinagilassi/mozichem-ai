@@ -11,6 +11,7 @@ class AppInfo(BaseModel):
 
 class AgentDetails(BaseModel):
     exists: bool = Field(..., description="Agent exists.")
+    model_provider: str = Field(..., description="Model provider.")
     model_name: str = Field(..., description="Model name.")
     agent_name: str = Field(..., description="Agent name.")
     agent_prompt: str = Field(..., description="Agent prompt.")
