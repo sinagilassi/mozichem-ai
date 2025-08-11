@@ -397,8 +397,6 @@ async def create_api(
             for key, value in mcp_config.items():
                 transport = value.get("transport")
                 if transport == "stdio":
-                    logger.info(f"Validating stdioMCP for {key}")
-                    logger.debug(f"Value: {value}")
                     # Validate using stdioMCP model and convert to dict
                     validated_config[key] = stdioMCP(**value).model_dump()
                 elif transport == "streamable_http":
