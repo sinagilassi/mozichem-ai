@@ -132,6 +132,9 @@ async def create_api(
     # NOTE: create fastapi app instance
     app = MoziChemAIAPI_.app
 
+    # NOTE: set running state
+    app.state.is_running = True
+
     # SECTION: app state configurations
     # set initial llm configurations in app.state
     app.state.temperature = kwargs.get(

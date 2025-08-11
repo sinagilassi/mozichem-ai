@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 # local imports
 from .llm import llm_router
+from .config_api import config_router
 
 
 # NOTE: logger
@@ -108,4 +109,7 @@ class MoziChemAIAPI:
 
     def _register_routers(self):
         """Register API routers to the FastAPI application."""
+        # Register the llm router
         self.app.include_router(llm_router)
+        # Register the config router
+        self.app.include_router(config_router)
