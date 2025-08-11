@@ -32,13 +32,19 @@ from ..models import (
     AppInfo,
     AgentDetails,
     LlmDetails,
-    AgentMessage
+    AgentMessage,
+    stdioMCP,
+    streamableHttpMCP
 )
 from ..memory import generate_thread
 from ..utils import agent_message_analyzer, message_token_counter
 from ..config import default_token_metadata
 
 # NOTE: logger
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(name)s: %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 # NOTE: constants
@@ -374,6 +380,61 @@ async def create_api(
             logger.error(f"Error configuring agent: {e}")
             raise HTTPException(
                 status_code=500, detail=f"Failed to configure agent: {e}")
+
+    @app.post("/mcp-config")
+    async def set_mcp_config(
+        mcp_config: Dict[str, dict]  # Accept raw dicts
+    ):
+        """
+        Config the MCP source with the necessary parameters.
+        """
+        try:
+            # NOTE: log the received MCP configuration
+            logger.info(f"Received MCP configuration: {mcp_config}")
+
+            # SECTION: Validate each config using discriminated union
+            validated_config = {}
+            for key, value in mcp_config.items():
+                transport = value.get("transport")
+                if transport == "stdio":
+                    logger.info(f"Validating stdioMCP for {key}")
+                    logger.debug(f"Value: {value}")
+                    # Validate using stdioMCP model and convert to dict
+                    validated_config[key] = stdioMCP(**value).model_dump()
+                elif transport == "streamable_http":
+                    validated_config[key] = streamableHttpMCP(
+                        **value).model_dump()
+                else:
+                    raise ValueError(f"Unknown transport: {transport}")
+
+            # SECTION: update the mcp_source in app.state
+            app.state.mcp_source = validated_config
+
+            # SECTION: reinitialize the agent with the new MCP configuration
+            app.state.agent = await create_agent(
+                model_provider=app.state.model_provider,
+                model_name=app.state.model_name,
+                agent_name=app.state.agent_name,
+                agent_prompt=app.state.agent_prompt,
+                mcp_source=app.state.mcp_source,
+                memory_mode=app.state.memory_mode,
+                **kwargs
+            )
+
+            # NOTE: return success message
+            logger.info("MCP source configured successfully")
+            return JSONResponse(
+                content={
+                    "message": "MCP source configured successfully",
+                    "success": True,
+                    "data": app.state.mcp_source
+                },
+                status_code=200
+            )
+        except Exception as e:
+            logger.error(f"Error configuring MCP source: {e}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to configure MCP source: {e}")
 
     @app.post("/llm-config")
     async def set_llm_config(

@@ -69,7 +69,7 @@ mcp_source = {
     }
 }
 
-# mcp_source = None
+mcp_source = None
 
 # NOTE: agent prompt
 agent_prompt = """You are a helpful assistant that can perform various tasks using tools provided by MCP servers, as well as basic arithmetic operations.
