@@ -838,12 +838,22 @@ async def create_api(
                 cors_origins=MoziChemAIAPI_.cors_origins
             )
 
-            # SECTION: Return the ApiConfigSummary model
-            return ApiConfigSummary(
+            # NOTE: the ApiConfigSummary model
+            ApiConfigSummary_ = ApiConfigSummary(
                 app=app_info,
                 agent=agent_details,
                 llm=llm_details,
                 settings=overall_settings
+            )
+
+            # NOTE: return json response
+            return JSONResponse(
+                content={
+                    "message": "App info retrieved successfully",
+                    "success": True,
+                    "data": ApiConfigSummary_.model_dump()
+                },
+                status_code=200
             )
         except Exception as e:
             logger.error(f"Error in get_app_info: {e}")
