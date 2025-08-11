@@ -86,5 +86,5 @@ if __name__ == "__main__":
         agent_prompt=agent_prompt,
         mcp_source=mcp_source,
         memory_mode=True,
-        open_browser=False,
+        open_browser=True,
     )
