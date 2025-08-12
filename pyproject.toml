@@ -13,7 +13,7 @@ license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
@@ -42,5 +42,15 @@ include = ["mozichem_ai*"]
 exclude = ["tests*", "examples*"]
 
 [tool.setuptools.package-data]
-"mozichem_ai" = ["config/*.yml", "data/*.csv"]
+"mozichem_ai" = [
+    "config/*.yml",
+    "data/*.csv",
+    "ui/**/*",
+    "ui/browser/*",
+    "ui/browser/assets/**/*"
+]
+
+# Include all data files from MANIFEST.in
+[tool.setuptools]
+include-package-data = true
 
