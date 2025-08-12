@@ -1,6 +1,6 @@
 # MoziChem-AI
 
-
+![MoziChem Logo](./statics/mozichem-ai-1.png)
 
 [![PyPI Downloads](https://static.pepy.tech/badge/mozichem-ai/month)](https://pepy.tech/projects/mozichem-ai)
 ![PyPI Version](https://img.shields.io/pypi/v/mozichem-ai)
