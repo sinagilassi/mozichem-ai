@@ -13,6 +13,10 @@ It lets you easily configure LLM model parameters, connect to multiple Model Con
 
 ![MoziChem Logo](./statics/mozichem-ai-ui.jpeg)
 
+  Dynamic MCP Tool Management — MoziChem-AI lets you attach or detach any number of MCP tools at runtime. Once changes are made, you can restart the LangGraph agent with the updated toolset, enabling instant reconfiguration without modifying the underlying code.
+
+![MoziChem Logo](./statics/mozichem-ai-mcp.jpeg)
+
 ---
 
 ## 🏗️ Architecture
