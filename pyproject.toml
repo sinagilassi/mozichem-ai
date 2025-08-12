@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mozichem-ai"
-version = "0.1.0"
+version = "0.1.1"
 description = "MoziChem-AI brings powerful analysis tools to your browser with AI-driven workflows."
 authors = [
     { name = "Sina Gilassi", email = "sina.gilassi@gmail.com" }
