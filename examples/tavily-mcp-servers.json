@@ -1,0 +1,18 @@
+{
+  "remoteServers": [],
+  "stdioServers": [
+    {
+      "name": "tavily-search-mcp",
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.tavily.com/mcp/?tavilyApiKey=<API_KEY>"
+      ],
+      "env": {},
+      "enabled": true,
+      "description": "MCP server"
+    }
+  ]
+}

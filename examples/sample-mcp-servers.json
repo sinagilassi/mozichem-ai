@@ -1,0 +1,56 @@
+{
+  "remoteServers": [
+    {
+      "name": "OpenAI MCP Server",
+      "url": "http://localhost:3001/mcp",
+      "description": "OpenAI MCP server for AI model integration",
+      "enabled": true,
+      "env": {
+        "OPENAI_API_KEY": "your-openai-api-key",
+        "MODEL_NAME": "gpt-4"
+      }
+    },
+    {
+      "name": "Database MCP Server",
+      "url": "http://localhost:3002/mcp",
+      "description": "Database MCP server for data operations",
+      "enabled": false,
+      "env": {
+        "DB_HOST": "localhost",
+        "DB_PORT": "5432",
+        "DB_NAME": "mozichem"
+      }
+    }
+  ],
+  "stdioServers": [
+    {
+      "name": "Python MCP Server",
+      "command": "python",
+      "args": ["-m", "mcp_server", "--config", "config.json"],
+      "enabled": true,
+      "description": "Python-based MCP server for chemical calculations",
+      "env": {
+        "PYTHONPATH": "/opt/mcp",
+        "DEBUG": "false"
+      }
+    },
+    {
+      "name": "Node.js MCP Server",
+      "command": "node",
+      "args": ["server.js", "--port", "3003"],
+      "enabled": true,
+      "description": "Node.js MCP server for web services",
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": "3003"
+      }
+    },
+    {
+      "name": "UV MCP Server",
+      "command": "uv",
+      "args": ["--directory", "/path/to/server", "run", "mcp_server.py"],
+      "enabled": false,
+      "description": "UV-managed Python MCP server"
+    }
+  ]
+}

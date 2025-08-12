@@ -1,0 +1,26 @@
+{
+  "remoteServers": [
+    {
+      "name": "eos-models-mcp",
+      "transport": "streamable_http",
+      "url": "http://127.0.0.1:8001/eos-models-mcp/mcp/",
+      "description": "eos-models-mcp server for AI model integration",
+      "enabled": true
+    },
+    {
+      "name": "flash-calculations-mcp",
+      "transport": "streamable_http",
+      "url": "http://127.0.0.1:8001/flash-calculations-mcp/mcp/",
+      "description": "flash-calculations-mcp server for flash calculations",
+      "enabled": true
+    },
+    {
+      "name": "thermodynamic-properties-mcp",
+      "transport": "streamable_http",
+      "url": "http://127.0.0.1:8001/thermodynamic-properties-mcp/mcp/",
+      "description": "thermodynamic-properties-mcp server for thermodynamic properties",
+      "enabled": true
+    }
+  ],
+  "stdioServers": []
+}
