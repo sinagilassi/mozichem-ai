@@ -1,6 +1,6 @@
 # MoziChem-AI
 
-![MoziChem Logo](./statics/mozichem-ai-s-1.png)
+![MoziChem-AI Logo](https://drive.google.com/uc?export=view&id=1WKN5vQCt8TeIltix0_oHtrME6bV5X6EK)
 
 [![PyPI Downloads](https://static.pepy.tech/badge/mozichem-ai/month)](https://pepy.tech/projects/mozichem-ai)
 ![PyPI Version](https://img.shields.io/pypi/v/mozichem-ai)
@@ -11,11 +11,11 @@
 MoziChem-AI is a modern Python-powered UI for interacting with LLM agents via [LangGraph](https://github.com/langchain-ai/langgraph).
 It lets you easily configure LLM model parameters, connect to multiple Model Context Protocol (MCP) tools, and track agent reasoning in real time.
 
-![MoziChem Logo](./statics/mozichem-ai-ui.jpeg)
+![MoziChem-AI UI](https://drive.google.com/uc?export=view&id=1TUWYEAoyqYlBKlN1LSt6O5dcB3OoMYYT)
 
   Dynamic MCP Tool Management — MoziChem-AI lets you attach or detach any number of MCP tools at runtime. Once changes are made, you can restart the LangGraph agent with the updated toolset, enabling instant reconfiguration without modifying the underlying code.
 
-![MoziChem Logo](./statics/mozichem-ai-mcp.jpeg)
+![MoziChem-AI MCP](https://drive.google.com/uc?export=view&id=1_8ZV3loqA-H2BFH8arpp7hExiYtxxVkq)
 
 ---
 
